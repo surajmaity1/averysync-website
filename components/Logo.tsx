@@ -1,3 +1,7 @@
 export default function ArriveSoonLogo() {
-  return <div><p>ArriveSoon</p></div>;
+  return (
+    <div>
+      <span className="text-2xl font-light tracking-tight">Arrive Soon</span>
+    </div>
+  )
 }
