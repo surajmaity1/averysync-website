@@ -1,5 +1,7 @@
 'use client'
 
+import { applicationConfig } from '@/config/app-config'
+import { useAuth } from '@/hooks/useAuth'
 import { AlertDialogTrigger } from '@radix-ui/react-alert-dialog'
 import { XIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -15,8 +17,16 @@ import { Button } from '../ui/button'
 
 export const SignInButton = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const { isLoggedIn, isLoading } = useAuth()
 
-  const handleSignIn = () => {}
+  const handleSignIn = () => {
+    if (isLoggedIn) return
+    window.location.href = `${applicationConfig.backendApplicationURL}/v1/auth/google/login`
+  }
+
+  if (isLoading) {
+    return <p>loading</p>
+  }
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -43,7 +53,7 @@ export const SignInButton = () => {
             <Button className="gap-2" onClick={handleSignIn}>
               <GoogleIcon /> Google
             </Button>
-            <Button className="gap-2" onClick={handleSignIn}>
+            <Button className="gap-2" onClick={() => alert('Feature coming soon!')}>
               <LinkedInIcon /> LinkedIn
             </Button>
           </div>
