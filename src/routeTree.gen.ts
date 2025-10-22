@@ -9,38 +9,61 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as InternalRouteImport } from './routes/_internal'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InternalFeedRouteImport } from './routes/_internal.feed'
 
+const InternalRoute = InternalRouteImport.update({
+  id: '/_internal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InternalFeedRoute = InternalFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => InternalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/feed': typeof InternalFeedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/feed': typeof InternalFeedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_internal': typeof InternalRouteWithChildren
+  '/_internal/feed': typeof InternalFeedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/feed'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/feed'
+  id: '__root__' | '/' | '/_internal' | '/_internal/feed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  InternalRoute: typeof InternalRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_internal': {
+      id: '/_internal'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof InternalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +71,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_internal/feed': {
+      id: '/_internal/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof InternalFeedRouteImport
+      parentRoute: typeof InternalRoute
+    }
   }
 }
 
+interface InternalRouteChildren {
+  InternalFeedRoute: typeof InternalFeedRoute
+}
+
+const InternalRouteChildren: InternalRouteChildren = {
+  InternalFeedRoute: InternalFeedRoute,
+}
+
+const InternalRouteWithChildren = InternalRoute._addFileChildren(
+  InternalRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  InternalRoute: InternalRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

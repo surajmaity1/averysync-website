@@ -3,6 +3,7 @@
 import { applicationConfig } from '@/config/app-config'
 import { useAuth } from '@/hooks/useAuth'
 import { AlertDialogTrigger } from '@radix-ui/react-alert-dialog'
+import { Link } from '@tanstack/react-router'
 import { XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { GoogleIcon, LinkedInIcon } from '../icons/signin-button-icons'
@@ -14,6 +15,7 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog'
 import { Button } from '../ui/button'
+import { Skeleton } from '../ui/skeleton'
 
 export const SignInButton = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -25,7 +27,19 @@ export const SignInButton = () => {
   }
 
   if (isLoading) {
-    return <p>loading</p>
+    return (
+      <Button>
+        <Skeleton>Loading...</Skeleton>
+      </Button>
+    )
+  }
+
+  if (isLoggedIn) {
+    return (
+      <Button>
+        <Link to="/feed">Open Feed</Link>
+      </Button>
+    )
   }
 
   return (
@@ -53,7 +67,10 @@ export const SignInButton = () => {
             <Button className="gap-2" onClick={handleSignIn}>
               <GoogleIcon /> Google
             </Button>
-            <Button className="gap-2" onClick={() => alert('Feature coming soon!')}>
+            <Button
+              className="gap-2"
+              onClick={() => alert('Feature coming soon!')}
+            >
               <LinkedInIcon /> LinkedIn
             </Button>
           </div>
