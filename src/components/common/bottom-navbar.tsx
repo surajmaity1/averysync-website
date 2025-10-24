@@ -4,16 +4,16 @@ import { Button } from '../ui/button'
 
 export const BottomNavbar = () => {
   return (
-    <div className="fixed bottom-4 left-1/2 flex w-full -translate-x-1/2 justify-around gap-6">
+    <div className="fixed right-0 bottom-0 left-0 flex w-full justify-center">
       <Link to="/feed">
-        <Button className="flex h-12 w-50 items-center justify-center bg-white shadow-md">
+        <Button className="h-12 w-50 items-center justify-center bg-white shadow-md">
           <HomeIcon />
         </Button>
       </Link>
       <Link to="/chat">
         <Button
           // onClick={() => alert('Feature coming soon!')}
-          className="flex h-12 w-50 items-center justify-center bg-white shadow-md"
+          className="h-12 w-50 items-center justify-center bg-white shadow-md"
         >
           <MessageSquareText />
         </Button>

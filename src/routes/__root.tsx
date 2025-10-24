@@ -11,5 +11,7 @@ export const Route = createRootRoute({
       {import.meta.env.DEV && <TanStackRouterDevtools />}
     </>
   ),
-  notFoundComponent: () => <NotFoundPage />,
+  notFoundComponent: () => {
+    return <NotFoundPage />
+  },
 })

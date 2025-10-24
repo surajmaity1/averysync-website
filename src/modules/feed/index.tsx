@@ -1,7 +1,7 @@
-import { useSearch } from "@tanstack/react-router"
+import { useSearch } from '@tanstack/react-router'
 
 export const Feed = () => {
-  const search = useSearch({from: '/_internal/feed'})
-  console.log(search)
+  const search = useSearch({ from: '/_internal/feed' })
+
   return <div>Feed Page</div>
 }
