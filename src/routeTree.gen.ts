@@ -9,17 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as InternalRouteImport } from './routes/_internal'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InternalFeedRouteImport } from './routes/_internal.feed'
 import { Route as InternalChatRouteImport } from './routes/_internal.chat'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const InternalRoute = InternalRouteImport.update({
   id: '/_internal',
   getParentRoute: () => rootRouteImport,
@@ -42,13 +36,11 @@ const InternalChatRoute = InternalChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/chat': typeof InternalChatRoute
   '/feed': typeof InternalFeedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/chat': typeof InternalChatRoute
   '/feed': typeof InternalFeedRoute
 }
@@ -56,39 +48,24 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_internal': typeof InternalRouteWithChildren
-  '/about': typeof AboutRoute
   '/_internal/chat': typeof InternalChatRoute
   '/_internal/feed': typeof InternalFeedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/chat' | '/feed'
+  fullPaths: '/' | '/chat' | '/feed'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/chat' | '/feed'
-  id:
-    | '__root__'
-    | '/'
-    | '/_internal'
-    | '/about'
-    | '/_internal/chat'
-    | '/_internal/feed'
+  to: '/' | '/chat' | '/feed'
+  id: '__root__' | '/' | '/_internal' | '/_internal/chat' | '/_internal/feed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InternalRoute: typeof InternalRouteWithChildren
-  AboutRoute: typeof AboutRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_internal': {
       id: '/_internal'
       path: ''
@@ -137,7 +114,6 @@ const InternalRouteWithChildren = InternalRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InternalRoute: InternalRouteWithChildren,
-  AboutRoute: AboutRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
