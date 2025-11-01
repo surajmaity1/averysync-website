@@ -40,7 +40,9 @@ export const CreatePostButton = ({ defaultData }: CreatePostButtonProps) => {
       mode="create"
       defaultData={defaultData}
     >
-      <Button>Create Post / Space</Button>
+      <Button className="fixed right-6 bottom-12 flex h-14 w-14 transform items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg transition hover:scale-110 hover:bg-blue-700">
+        +
+      </Button>
     </CreatedUpdatePostDialog>
   )
 }
