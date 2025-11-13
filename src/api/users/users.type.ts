@@ -16,3 +16,7 @@ export type TUsersSearchResponse = {
   page: number
   total_count: number
 }
+
+export type GetUserByIdRequestDTO = {
+  userId: string
+}

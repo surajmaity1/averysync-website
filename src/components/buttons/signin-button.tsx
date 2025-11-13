@@ -57,7 +57,7 @@ export const SignInButton = () => {
           </AlertDialogDescription>
 
           <Button
-            className="absolute top-4 right-4"
+            className="absolute top-4 left-4"
             onClick={() => setIsOpen(false)}
           >
             <XIcon />

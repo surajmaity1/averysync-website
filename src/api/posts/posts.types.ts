@@ -42,3 +42,11 @@ export type GetPostsDTO = {
   errors?: Record<string, any>
   posts: Post[]
 }
+
+export type GetPostByIdRequestDTO = {
+  postId: string
+}
+
+export type PostDTO = {
+  data: Post
+}

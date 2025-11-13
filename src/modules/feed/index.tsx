@@ -4,9 +4,10 @@ import { CreatePostButton } from '@/components/posts/create-post-button'
 import { Card, EmptyCard } from '@/components/posts/post-card'
 import { CardSkeleton } from '@/components/posts/post-skeleton'
 import { useQuery } from '@tanstack/react-query'
-import { useSearch } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 
 export const Feed = () => {
+  const navigate = useNavigate()
   const search = useSearch({ from: '/_internal/feed' })
 
   const { data, isLoading, isError } = useQuery({
@@ -46,7 +47,17 @@ export const Feed = () => {
 
       <div className="space-y-6">
         {data?.posts?.map((post) => (
-          <Card key={post.id} className="" post={post} />
+          <Card
+            key={post?.id}
+            post={post}
+            className=""
+            onClick={() =>
+              navigate({
+                to: '/feed/$postId',
+                params: { postId: post.id },
+              })
+            }
+          />
         ))}
       </div>
 

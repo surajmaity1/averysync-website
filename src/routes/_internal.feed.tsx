@@ -1,12 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { lazy } from 'react'
-
-const Feed = lazy(() =>
-  import('@/modules/feed').then((m) => ({ default: m.Feed })),
-)
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 function FeedPage() {
-  return <Feed />
+  return (
+    <div>
+      <Outlet />
+    </div>
+  )
 }
 
 export const Route = createFileRoute('/_internal/feed')({
