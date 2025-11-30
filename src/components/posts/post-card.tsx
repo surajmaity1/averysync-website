@@ -4,19 +4,13 @@ import { UsersAPI } from '@/api/users/users.api'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/libs/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  Bell,
-  MessageCircle,
-  Mic,
-  PlusCircle,
-  Share2,
-  ThumbsUp,
-} from 'lucide-react'
+import { MessageCircle, Mic, PlusCircle, Share2, ThumbsUp } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
 import { CreatedUpdatePostDialog } from './create-update-post-dialog'
 import { PostHeader } from './post-card-header'
+import { ReminderCard } from './reminder'
 
 type CardProps = {
   className: string
@@ -33,11 +27,6 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
     queryKey: UsersAPI.getUserById.key({ userId: post.createdBy }),
     queryFn: () => UsersAPI.getUserById.fn({ userId: post.createdBy }),
   })
-
-  const handleSetReminder = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    toast.info('Reminder feature coming soon!')
-  }
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -100,13 +89,7 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
       {/* Set Reminder Section — only for SPACE type */}
       {post.type === 'SPACE' && (
         <div className="mt-4 flex justify-center">
-          <Button
-            onClick={handleSetReminder}
-            className="mb-4 flex items-center space-x-2 rounded-2xl bg-blue-500 px-6 py-2 text-white hover:bg-blue-600"
-          >
-            <Bell size={18} />
-            <span>Set Reminder</span>
-          </Button>
+          <ReminderCard post={post} />
         </div>
       )}
 

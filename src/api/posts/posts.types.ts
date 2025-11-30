@@ -50,3 +50,32 @@ export type GetPostByIdRequestDTO = {
 export type PostDTO = {
   data: Post
 }
+
+export type Reminder = {
+  id: string
+  isReminderSet: boolean
+  spaceId: string
+  isDeleted?: boolean
+  createdAt: string
+  createdBy: string
+  updatedAt?: string
+}
+
+export type ReminderDTO = {
+  id: string
+  isReminderSet: boolean
+  spaceId: string
+  isDeleted?: boolean
+  createdAt: string
+  createdBy: string
+  updatedAt?: string
+}
+
+export type GetSpaceReminderByIdRequestDTO = {
+  postId: string
+}
+
+export type CreateUpdateSpaceReminderRequestDTO = {
+  postId: string
+  isReminderSet: boolean
+}
