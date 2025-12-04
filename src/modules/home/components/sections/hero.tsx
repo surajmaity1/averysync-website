@@ -8,13 +8,13 @@ export const Hero: React.FC = () => {
         <div className="mx-auto max-w-4xl text-center">
           <div className="animate-fade-in mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm">
             <span className="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-            2,405 developers are debugging right now
+            2 developers are debugging right now
           </div>
 
           <h1 className="mb-8 text-5xl leading-[1.1] font-extrabold tracking-tight text-slate-900 md:text-7xl">
-            Social networking for <br className="hidden md:block" />
+            Solve technical issue <br className="hidden md:block" />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              serious problem solvers.
+              with developers
             </span>
           </h1>
 

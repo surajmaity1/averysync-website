@@ -1,16 +1,19 @@
 import React from 'react'
 import { TESTIMONIALS } from '../data/data'
-import { SectionLabel } from '../ui/sectionLabel'
 
 export const Testimonials: React.FC = () => {
   return (
     <section id="testimonials" className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
-          <SectionLabel>Community Love</SectionLabel>
-          <h2 className="text-3xl font-bold text-slate-900">
-            Devs helping devs
-          </h2>
+          <button
+            onClick={() =>
+              (window.location.href = 'http://discord.gg/ZhbqDN9fz4')
+            }
+            className="cursor-pointer rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-blue-600 hover:shadow-lg"
+          >
+            Join Discord Community
+          </button>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {TESTIMONIALS.map((t, i) => (

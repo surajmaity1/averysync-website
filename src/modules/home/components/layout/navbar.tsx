@@ -34,17 +34,8 @@ export const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* CTA Buttons */}
           <div className="hidden items-center gap-4 md:flex">
             <SignInButton />
-            <button
-              onClick={() =>
-                (window.location.href = 'http://discord.gg/ZhbqDN9fz4')
-              }
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-slate-800 hover:shadow-lg"
-            >
-              Join Community
-            </button>
           </div>
 
           {/* Mobile Toggle */}
@@ -72,11 +63,8 @@ export const Navbar: React.FC = () => {
               {link.label}
             </a>
           ))}
-          <div className="flex flex-col gap-3 border-t border-slate-100 pt-4">
+          <div className="flex flex-col items-center gap-3 border-t border-slate-100 pt-4">
             <SignInButton />
-            <button className="w-full rounded-lg bg-blue-600 py-2 font-medium text-white">
-              Join Community
-            </button>
           </div>
         </div>
       )}

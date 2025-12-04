@@ -36,7 +36,7 @@ export const SignInButton = () => {
 
   if (isLoggedIn) {
     return (
-      <Button>
+      <Button className="bg-blue-600 text-white hover:bg-blue-700">
         <Link to="/feed">Open Feed</Link>
       </Button>
     )

@@ -69,7 +69,7 @@ export const TESTIMONIALS: Testimonial[] = [
     content:
       'I posted a complex race condition issue in the React channel and had three senior engineers helping me debug within minutes.',
     author: 'Alex Rivera',
-    role: 'Frontend Lead @ StreamLine',
+    role: 'Frontend Lead',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
   },
   {
@@ -89,7 +89,7 @@ export const TESTIMONIALS: Testimonial[] = [
 ]
 
 export const STATS: Stat[] = [
-  { label: 'Developers', value: '2M+' },
-  { label: 'Issues Solved', value: '850k' },
-  { label: 'Daily Snippets', value: '15k+' },
+  { label: 'Developers', value: '1+' },
+  { label: 'Issues Solved', value: '0' },
+  { label: 'Daily Snippets', value: '0' },
 ]

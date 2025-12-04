@@ -49,7 +49,7 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 font-bold text-slate-900">Platform</h4>
             <ul className="space-y-2 text-sm text-slate-600">
               <li>
-                <a href="#" className="hover:text-blue-600">
+                <a href="./feed" className="hover:text-blue-600">
                   Browse Issues
                 </a>
               </li>
