@@ -1,4 +1,3 @@
-
 ```
 pnpm install
 ```
@@ -6,10 +5,10 @@ pnpm install
 ```
 pnpm dev
 ```
+
 ```
 pnpm routes:generate
 ```
-
 
 APIs:
 

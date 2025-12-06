@@ -11,7 +11,9 @@ export const Footer: React.FC = () => {
               <div className="rounded-lg bg-blue-600 p-1.5">
                 <Cpu className="h-4 w-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-slate-900">Averysync</span>
+              <span className="text-lg font-bold text-slate-900">
+                Averysync
+              </span>
             </div>
             <p className="mb-6 max-w-xs text-sm leading-relaxed text-slate-500">
               The premier platform for technical problem solving and
