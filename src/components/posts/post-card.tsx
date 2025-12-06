@@ -89,7 +89,7 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
       {/* Set Reminder Section — only for SPACE type */}
       {post.type === 'SPACE' && (
         <div className="mt-4 flex justify-center">
-          <ReminderCard post={post} />
+          <ReminderCard postId={post.id} />
         </div>
       )}
 
@@ -134,7 +134,7 @@ export const EmptyCard = ({ className = '', defaultData }: EmptyCardProps) => {
     onSuccess: () => {
       toast.success('Post created')
       setShowCreatePostForm(false)
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
+      void queryClient.invalidateQueries({ queryKey: PostsApi.getPosts.key })
     },
     onError: () => {
       toast.error('Unable to create post')

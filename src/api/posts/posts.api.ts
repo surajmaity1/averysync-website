@@ -53,7 +53,7 @@ export const PostsApi = {
     ],
     fn: async ({
       postId,
-    }: GetSpaceReminderByIdRequestDTO): Promise<ReminderDTO> => {
+    }: GetSpaceReminderByIdRequestDTO): Promise<TApiResponse<ReminderDTO>> => {
       const { data } = await axiosAPIClient.get(`/v1/posts/${postId}/reminders`)
       return data
     },
