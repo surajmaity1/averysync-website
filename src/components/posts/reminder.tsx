@@ -1,15 +1,16 @@
 import { PostsApi } from '@/api/posts/posts.api'
 import { cn } from '@/libs/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BadgeCheck, Bell } from 'lucide-react'
+import { BadgeCheck, Bell, Loader } from 'lucide-react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
 import { Button } from '../ui/button'
+import { useState } from 'react'
 
 const ReminderButtonSkeleton = () => {
   return (
-    <div className="mt-4 flex justify-center">
-      <Shimmer className="mb-4 h-10 w-36 rounded-2xl bg-blue-500" />
+    <div className="flex justify-center">
+      <Shimmer className="mb-4 h-8 w-32 rounded-2xl bg-blue-500" />
     </div>
   )
 }
@@ -21,6 +22,8 @@ type ReminderProps = {
 
 export const ReminderCard = ({ className = '', postId }: ReminderProps) => {
   const queryClient = useQueryClient()
+  const [reminderButtonLoadingText, setReminderButtonLoadingText] =
+    useState(false)
 
   const { data: reminder, isLoading } = useQuery({
     queryKey: PostsApi.getSpaceReminderById.key({ postId: postId }),
@@ -31,19 +34,32 @@ export const ReminderCard = ({ className = '', postId }: ReminderProps) => {
     mutationFn: () =>
       PostsApi.createUpdateSpaceReminderById.fn({
         postId: postId,
-        isReminderSet: !reminder?.data?.isReminderSet,
+        isReminderSet: !reminder?.data.isReminderSet,
       }),
     onMutate: () => {
-      toast.loading('Setting Reminder...', { id: 'reminder-toast' })
+      setReminderButtonLoadingText(true)
+      const loadingReminderText = reminder?.data.isReminderSet
+        ? 'Removing'
+        : 'Setting'
+      toast.loading(`${loadingReminderText} Reminder...`, {
+        id: 'reminder-toast',
+      })
     },
     onSuccess: () => {
+      setReminderButtonLoadingText(false)
       void queryClient.invalidateQueries({
         queryKey: PostsApi.getSpaceReminderById.key({ postId: postId }),
       })
-      toast.success('Reminder set successfully!', { id: 'reminder-toast' })
+      const loadingReminderText = reminder?.data.isReminderSet
+        ? 'removed'
+        : 'set'
+      toast.success(`Reminder ${loadingReminderText} successfully!`, {
+        id: 'reminder-toast',
+      })
     },
 
     onError: () => {
+      setReminderButtonLoadingText(false)
       toast.error('Failed to set reminder', { id: 'reminder-toast' })
     },
   })
@@ -67,15 +83,24 @@ export const ReminderCard = ({ className = '', postId }: ReminderProps) => {
           : 'bg-blue-500 hover:bg-blue-600',
       )}
     >
-      {reminder?.data.isReminderSet ? (
+      {reminderButtonLoadingText ? (
         <>
-          <BadgeCheck size={18} />
-          <span>Reminder set</span>
+          <Loader size={18} />
+          <span>Loading...</span>
         </>
       ) : (
         <>
-          <Bell size={18} />
-          <span>Set Reminder</span>
+          {reminder?.data.isReminderSet ? (
+            <>
+              <BadgeCheck size={18} />
+              <span>Reminder set</span>
+            </>
+          ) : (
+            <>
+              <Bell size={18} />
+              <span>Set Reminder</span>
+            </>
+          )}
         </>
       )}
     </Button>
