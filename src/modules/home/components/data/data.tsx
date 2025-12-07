@@ -39,15 +39,15 @@ export const NAV_LINKS: NavLink[] = [
 // but we will keep your structure for consistency.
 export const FEATURES: Feature[] = [
   {
-    title: 'Live Debugging Rooms',
+    title: 'Live Spaces',
     description:
-      'Share your terminal and IDE context in real-time with peers to squash bugs faster than ever.',
+      'Host or join real-time audio rooms. Discuss design systems, engineering challenges, or product strategy with peers worldwide—just like a hallway track at a conference.',
     icon: <Terminal className="h-6 w-6 text-blue-600" />,
   },
   {
     title: 'Community Feed',
     description:
-      'A tailored social feed focusing on technical achievements, open source contributions, and knowledge sharing.',
+      'A tailored social feed focusing on technical discussions, open source contributions, and knowledge sharing.',
     icon: <Share2 className="h-6 w-6 text-blue-600" />,
   },
   {
@@ -57,9 +57,9 @@ export const FEATURES: Feature[] = [
     icon: <CheckCircle2 className="h-6 w-6 text-blue-600" />,
   },
   {
-    title: 'Code-Aware Search',
+    title: 'Global "Town Hall"',
     description:
-      'Search by error logs, stack traces, or code snippets to find exact matches across the global knowledge base.',
+      'A tailored feed of live discussions happening right now. From Silicon Valley to Singapore, jump into conversations that matter to your specific niche.',
     icon: <Code2 className="h-6 w-6 text-blue-600" />,
   },
 ]
@@ -67,29 +67,29 @@ export const FEATURES: Feature[] = [
 export const TESTIMONIALS: Testimonial[] = [
   {
     content:
-      'I posted a complex race condition issue in the React channel and had three senior engineers helping me debug within minutes.',
+      "I hosted a space about 'Scaling Backend' and ended up chatting with a VP of Engineering for an hour. Two weeks later, I met in person. The space format is a game changer.",
     author: 'Alex Rivera',
-    role: 'Frontend Lead',
+    role: 'Backend Lead',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
   },
   {
     content:
-      "Finally, a social network that understands code. I've met my last two co-founders through the architecture discussion forums.",
+      'Finally, a professional network that feels human. I use Averysync to scout talent by listening to how developers explain complex concepts in real-time.',
     author: 'Sarah Chen',
-    role: 'System Architect',
+    role: 'Product Director',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
   },
   {
     content:
-      "The balance between social interaction and serious technical problem solving is perfect. It's my go-to tab.",
+      "It's like a 24/7 tech conference. I can jump in, listen to senior designers discuss trends, and ask questions directly. It accelerated my growth more than any course.",
     author: 'James Wilson',
-    role: 'Full Stack Developer',
+    role: 'UI/UX Designer',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
   },
 ]
 
 export const STATS: Stat[] = [
-  { label: 'Developers', value: '1+' },
-  { label: 'Issues Solved', value: '0' },
-  { label: 'Daily Snippets', value: '0' },
+  { label: 'Live Spaces Hosted', value: '0' },
+  { label: 'Global Professionals', value: '0' },
+  { label: 'Minutes Spoken', value: '0' },
 ]

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { ArrowRight, Search } from 'lucide-react'
 import React from 'react'
 
@@ -8,28 +9,36 @@ export const Hero: React.FC = () => {
         <div className="mx-auto max-w-4xl text-center">
           <div className="animate-fade-in mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm">
             <span className="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-            2 developers are debugging right now
+            2 active spaces right now
           </div>
 
           <h1 className="mb-8 text-5xl leading-[1.1] font-extrabold tracking-tight text-slate-900 md:text-7xl">
-            Solve technical issue <br className="hidden md:block" />
+            Connect in real-time <br className="hidden md:block" />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              with developers
+              with global tech minds
             </span>
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-slate-600">
-            Connect with engineers worldwide. Share knowledge, debug complex
-            issues in real-time, and build your professional reputation.
+            Experience real-time professional networking on{' '}
+            <strong>Averysync</strong> via live spaces. Make{' '}
+            <strong>Averysync</strong> your daily stage for career growth.
           </p>
 
           <div className="mb-20 flex flex-col justify-center gap-4 sm:flex-row">
-            <button className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700">
-              Start Solving <ArrowRight className="h-5 w-5" />
-            </button>
-            <button className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 py-4 text-lg font-bold text-slate-700 transition-colors hover:bg-slate-50">
-              <Search className="h-5 w-5" /> Browse Issues
-            </button>
+            <Link
+              to="/feed"
+              className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700"
+            >
+              Start a Space <ArrowRight className="h-5 w-5" />
+            </Link>
+
+            <Link
+              to="/feed"
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 py-4 text-lg font-bold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              <Search className="h-5 w-5" /> Explore Live Rooms
+            </Link>
           </div>
 
           {/* Hero Graphic / Mockup */}

@@ -20,11 +20,11 @@ export const Features: React.FC = () => {
         <div className="mx-auto mb-16 max-w-3xl text-center">
           <SectionLabel>Capabilities</SectionLabel>
           <h2 className="mb-4 text-3xl font-bold text-slate-900 sm:text-4xl">
-            Where code meets conversation
+            Where voice meets opportunity
           </h2>
           <p className="text-lg text-slate-600">
-            A platform designed to reduce the isolation of coding. Get help,
-            give back, and grow your network.
+            A platform designed to humanize the tech industry. Speak, listen,
+            and build your professional reputation.
           </p>
         </div>
 
