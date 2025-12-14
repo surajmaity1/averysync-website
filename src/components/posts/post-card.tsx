@@ -89,7 +89,7 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
       {/* Set Reminder Section — only for SPACE type */}
       {post.type === 'SPACE' && (
         <div className="mt-4 flex justify-center">
-          <ReminderCard postId={post.id} />
+          <ReminderCard post={post} />
         </div>
       )}
 

@@ -1,6 +1,6 @@
 import { POST_TYPE_ENUM, RECORDED_TYPE_ENUM } from '@/api/posts/posts.enum'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AudioLines } from 'lucide-react'
+import { AudioLines, Send, XIcon } from 'lucide-react'
 import { Controller, useForm, UseFormWatch } from 'react-hook-form'
 import z from 'zod'
 import { Button } from '../ui/button'
@@ -67,11 +67,12 @@ const SubmitFormButton = ({
     <Button
       type="submit"
       disabled={!isReactHookValidated || isButtonDisabled || isLoading}
-      className={`${
+      className={`absolute bottom-4 gap-1 ${
         isButtonDisabled || isLoading ? 'cursor-not-allowed opacity-50' : ''
       }`}
     >
       {text}
+      <Send size="20" />
     </Button>
   )
 }
@@ -188,7 +189,11 @@ export const CreateUpdatePostForm = ({
         )}
       />
       <div>
-        {onCancel && <Button onClick={onCancel}>Close</Button>}
+        {onCancel && (
+          <Button className="absolute top-4 right-4" onClick={onCancel}>
+            <XIcon />
+          </Button>
+        )}
         <SubmitFormButton
           text={isSubmitting ? buttonLoadingText : buttonText}
           isDisabled={mode === 'update' ? !isDirty : false}

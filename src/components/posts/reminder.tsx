@@ -1,11 +1,14 @@
 import { PostsApi } from '@/api/posts/posts.api'
+import { Post } from '@/api/posts/posts.types'
+import { UsersAPI } from '@/api/users/users.api'
 import { cn } from '@/libs/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BadgeCheck, Bell, Loader } from 'lucide-react'
+import { BadgeCheck, Bell, Loader, Podcast } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
+import { SpaceCard } from '../spaces/space-card'
 import { Button } from '../ui/button'
-import { useState } from 'react'
 
 const ReminderButtonSkeleton = () => {
   return (
@@ -17,23 +20,33 @@ const ReminderButtonSkeleton = () => {
 
 type ReminderProps = {
   className?: string
-  postId: string
+  post: Post
 }
 
-export const ReminderCard = ({ className = '', postId }: ReminderProps) => {
+export const ReminderCard = ({ className = '', post }: ReminderProps) => {
   const queryClient = useQueryClient()
   const [reminderButtonLoadingText, setReminderButtonLoadingText] =
     useState(false)
+  const [openStartSpaceDialog, setOpenStartSpaceDialog] = useState(false)
 
   const { data: reminder, isLoading } = useQuery({
-    queryKey: PostsApi.getSpaceReminderById.key({ postId: postId }),
-    queryFn: () => PostsApi.getSpaceReminderById.fn({ postId: postId }),
+    queryKey: PostsApi.getSpaceReminderById.key({ postId: post.id }),
+    queryFn: () => PostsApi.getSpaceReminderById.fn({ postId: post.id }),
+  })
+
+  const {
+    data: userData,
+    isLoading: isUserDataLoading,
+    isError,
+  } = useQuery({
+    queryKey: UsersAPI.getUserInfo.key,
+    queryFn: UsersAPI.getUserInfo.fn,
   })
 
   const reminderMutation = useMutation({
     mutationFn: () =>
       PostsApi.createUpdateSpaceReminderById.fn({
-        postId: postId,
+        postId: post.id,
         isReminderSet: !reminder?.data.isReminderSet,
       }),
     onMutate: () => {
@@ -48,7 +61,7 @@ export const ReminderCard = ({ className = '', postId }: ReminderProps) => {
     onSuccess: () => {
       setReminderButtonLoadingText(false)
       void queryClient.invalidateQueries({
-        queryKey: PostsApi.getSpaceReminderById.key({ postId: postId }),
+        queryKey: PostsApi.getSpaceReminderById.key({ postId: post.id }),
       })
       const loadingReminderText = reminder?.data.isReminderSet
         ? 'removed'
@@ -66,6 +79,12 @@ export const ReminderCard = ({ className = '', postId }: ReminderProps) => {
 
   const handleSetReminder = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (userData?.id === post.createdBy) {
+      if (!openStartSpaceDialog) {
+        setOpenStartSpaceDialog(true)
+      }
+      return
+    }
     reminderMutation.mutate()
   }
 
@@ -83,22 +102,35 @@ export const ReminderCard = ({ className = '', postId }: ReminderProps) => {
           : 'bg-blue-500 hover:bg-blue-600',
       )}
     >
-      {reminderButtonLoadingText ? (
+      {reminderButtonLoadingText || isUserDataLoading ? (
         <>
           <Loader size={18} />
           <span>Loading...</span>
         </>
       ) : (
         <>
-          {reminder?.data.isReminderSet ? (
-            <>
-              <BadgeCheck size={18} />
-              <span>Reminder set</span>
-            </>
+          {userData?.id === post.createdBy ? (
+            <SpaceCard
+              open={openStartSpaceDialog}
+              onOpenChange={setOpenStartSpaceDialog}
+              post={post}
+            >
+              <Podcast size={18} />
+              <span>Start now</span>
+            </SpaceCard>
           ) : (
             <>
-              <Bell size={18} />
-              <span>Set Reminder</span>
+              {reminder?.data.isReminderSet ? (
+                <>
+                  <BadgeCheck size={18} />
+                  <span>Reminder set</span>
+                </>
+              ) : (
+                <>
+                  <Bell size={18} />
+                  <span>Set Reminder</span>
+                </>
+              )}
             </>
           )}
         </>
