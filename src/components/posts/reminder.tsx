@@ -7,7 +7,7 @@ import { BadgeCheck, Bell, Loader, Podcast } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
-import { SpaceCard } from '../spaces/space-card'
+import { SpaceAlertDialog } from '../spaces/space-card'
 import { Button } from '../ui/button'
 
 const ReminderButtonSkeleton = () => {
@@ -110,14 +110,14 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
       ) : (
         <>
           {userData?.id === post.createdBy ? (
-            <SpaceCard
+            <SpaceAlertDialog
               open={openStartSpaceDialog}
               onOpenChange={setOpenStartSpaceDialog}
               post={post}
             >
               <Podcast size={18} />
               <span>Start now</span>
-            </SpaceCard>
+            </SpaceAlertDialog>
           ) : (
             <>
               {reminder?.data.isReminderSet ? (

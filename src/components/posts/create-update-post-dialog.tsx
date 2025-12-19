@@ -1,3 +1,4 @@
+import { AlertDialogDescription } from '@radix-ui/react-alert-dialog'
 import { ReactNode } from 'react'
 import {
   AlertDialog,
@@ -39,10 +40,11 @@ export const CreatedUpdatePostDialog = ({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent className="bg-gray-100">
+      <AlertDialogContent className="bg-gray-50">
         <AlertDialogTitle>
           {mode === 'create' ? 'Create Post / Space' : 'Update Post / Space'}
         </AlertDialogTitle>
+        <AlertDialogDescription></AlertDialogDescription>
         <CreateUpdatePostForm
           isSubmitting={isMutationPending}
           mode={mode}

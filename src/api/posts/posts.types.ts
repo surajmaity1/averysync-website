@@ -79,3 +79,11 @@ export type CreateUpdateSpaceReminderRequestDTO = {
   postId: string
   isReminderSet: boolean
 }
+
+export type UpdatePostRequestDTO = {
+  postId: string
+  title: string
+  description?: string
+  type?: POST_TYPE_ENUM
+  isRecorded?: boolean
+}
