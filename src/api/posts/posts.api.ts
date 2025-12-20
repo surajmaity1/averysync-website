@@ -9,6 +9,7 @@ import {
   PostDTO,
   ReminderDTO,
   TPost,
+  UpdatePostRequestDTO,
 } from './posts.types'
 
 export const PostsApi = {
@@ -55,6 +56,22 @@ export const PostsApi = {
       postId,
     }: GetSpaceReminderByIdRequestDTO): Promise<TApiResponse<ReminderDTO>> => {
       const { data } = await axiosAPIClient.get(`/v1/posts/${postId}/reminders`)
+      return data
+    },
+  },
+  updatePostById: {
+    key: ({ postId }: UpdatePostRequestDTO) => [
+      'postApi.updatePostById',
+      postId,
+    ],
+    fn: async ({
+      postId,
+      ...updatePostRequestDTO
+    }: UpdatePostRequestDTO): Promise<PostDTO> => {
+      const { data } = await axiosAPIClient.patch<PostDTO>(
+        `/v1/posts/${postId}`,
+        updatePostRequestDTO,
+      )
       return data
     },
   },

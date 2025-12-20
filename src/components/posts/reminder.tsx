@@ -2,12 +2,13 @@ import { PostsApi } from '@/api/posts/posts.api'
 import { Post } from '@/api/posts/posts.types'
 import { UsersAPI } from '@/api/users/users.api'
 import { cn } from '@/libs/utils'
+import { PostStatus } from '@/types/post'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BadgeCheck, Bell, Loader, Podcast } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
-import { SpaceCard } from '../spaces/space-card'
+import { SpaceAlertDialog } from '../spaces/space-card'
 import { Button } from '../ui/button'
 
 const ReminderButtonSkeleton = () => {
@@ -28,6 +29,8 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
   const [reminderButtonLoadingText, setReminderButtonLoadingText] =
     useState(false)
   const [openStartSpaceDialog, setOpenStartSpaceDialog] = useState(false)
+  const spaceStatus =
+    post.status === PostStatus.open || post.status === PostStatus.closed
 
   const { data: reminder, isLoading } = useQuery({
     queryKey: PostsApi.getSpaceReminderById.key({ postId: post.id }),
@@ -96,10 +99,12 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
     <Button
       onClick={handleSetReminder}
       className={cn(
-        'mb-4 flex items-center space-x-2 rounded-2xl px-6 py-2 text-white transition-all',
+        'mb-4 flex items-center justify-center space-x-2 rounded-2xl px-6 py-2 text-white transition-all',
         reminder?.data.isReminderSet
           ? 'bg-green-600 hover:bg-green-700'
           : 'bg-blue-500 hover:bg-blue-600',
+        post.status === PostStatus.started &&
+          'bg-rose-100 hover:bg-rose-200 hover:text-white',
       )}
     >
       {reminderButtonLoadingText || isUserDataLoading ? (
@@ -110,14 +115,25 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
       ) : (
         <>
           {userData?.id === post.createdBy ? (
-            <SpaceCard
+            <SpaceAlertDialog
               open={openStartSpaceDialog}
               onOpenChange={setOpenStartSpaceDialog}
               post={post}
             >
-              <Podcast size={18} />
-              <span>Start now</span>
-            </SpaceCard>
+              <>
+                {spaceStatus ? (
+                  <>
+                    <Podcast size={18} />
+                    <span>Start now</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="h-5 w-5 animate-pulse rounded-full bg-rose-500"></span>
+                    <span className="font-bold text-rose-500">LIVE</span>
+                  </>
+                )}
+              </>
+            </SpaceAlertDialog>
           ) : (
             <>
               {reminder?.data.isReminderSet ? (
