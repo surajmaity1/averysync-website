@@ -64,7 +64,7 @@ const SpaceDetailView = ({ post }: SpaceDetailViewProps) => {
     mutationFn: () =>
       PostsApi.updatePostById.fn({
         postId: post.id,
-        status: spaceStatus ? SpaceStatus.started : SpaceStatus.ended,
+        status: spaceStatus ? SpaceStatus.live : SpaceStatus.ended,
       }),
     onSuccess: () => {
       toast.success('Space started', { id: 'start-space' })
@@ -84,7 +84,8 @@ const SpaceDetailView = ({ post }: SpaceDetailViewProps) => {
     },
   })
 
-  const handleStarEndSpace = () => {
+  const handleStarEndSpace = (e: React.MouseEvent) => {
+    e.stopPropagation()
     postMutation.mutate()
   }
 

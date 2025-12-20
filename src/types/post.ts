@@ -1,13 +1,13 @@
 export const enum SpaceStatus {
-  open = 'OPEN',
-  started = 'STARTED',
+  scheduled = 'SCHEDULED',
+  live = 'LIVE',
   ended = 'ENDED',
   closed = 'CLOSED',
 }
 
 export const enum PostStatus {
-  open = 1,
-  started = 2,
+  scheduled = 1,
+  live = 2,
   ended = 3,
   closed = 4,
 }
