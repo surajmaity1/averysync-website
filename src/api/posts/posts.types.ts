@@ -11,6 +11,7 @@ export type Post = {
   createdBy: string
   updatedAt?: string
   updatedBy?: string
+  status?: number
 }
 
 export type TPostCreatedBy = {
@@ -78,4 +79,18 @@ export type GetSpaceReminderByIdRequestDTO = {
 export type CreateUpdateSpaceReminderRequestDTO = {
   postId: string
   isReminderSet: boolean
+}
+
+export type UpdatePostRequestDTO = {
+  postId: string
+  title?: string
+  description?: string
+  isRecorded?: boolean
+  scheduledStartedAt?: string
+  scheduledEndedAt?: string
+  startedAt?: string
+  endedAt?: string
+  createdInTimezone?: string
+  status?: string
+  type?: string
 }

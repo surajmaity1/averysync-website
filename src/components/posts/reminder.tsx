@@ -2,12 +2,13 @@ import { PostsApi } from '@/api/posts/posts.api'
 import { Post } from '@/api/posts/posts.types'
 import { UsersAPI } from '@/api/users/users.api'
 import { cn } from '@/libs/utils'
+import { PostStatus } from '@/types/post'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BadgeCheck, Bell, Loader, Podcast } from 'lucide-react'
+import { BadgeCheck, BadgeInfo, Bell, Loader, Podcast } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
-import { SpaceCard } from '../spaces/space-card'
+import { SpaceAlertDialog } from '../spaces/space-card'
 import { Button } from '../ui/button'
 
 const ReminderButtonSkeleton = () => {
@@ -79,12 +80,27 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
 
   const handleSetReminder = (e: React.MouseEvent) => {
     e.stopPropagation()
+
+    if (post.status === PostStatus.ended) {
+      // TODO: view details dialog
+      setOpenStartSpaceDialog(false)
+      toast.success('View details view coming soon')
+      return
+    }
+
     if (userData?.id === post.createdBy) {
       if (!openStartSpaceDialog) {
         setOpenStartSpaceDialog(true)
       }
       return
     }
+
+    if (post.status === PostStatus.live) {
+      // TODO: Implement listerner view dialog
+      toast.success('Listerner view view coming soon')
+      return
+    }
+
     reminderMutation.mutate()
   }
 
@@ -96,10 +112,13 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
     <Button
       onClick={handleSetReminder}
       className={cn(
-        'mb-4 flex items-center space-x-2 rounded-2xl px-6 py-2 text-white transition-all',
+        'mb-4 flex items-center justify-center space-x-2 rounded-2xl px-6 py-2 text-white transition-all',
         reminder?.data.isReminderSet
           ? 'bg-green-600 hover:bg-green-700'
           : 'bg-blue-500 hover:bg-blue-600',
+        post.status === PostStatus.live &&
+          'bg-rose-100 hover:bg-rose-200 hover:text-white',
+        post.status === PostStatus.ended ? 'bg-gray-400 hover:bg-gray-500' : '',
       )}
     >
       {reminderButtonLoadingText || isUserDataLoading ? (
@@ -110,27 +129,53 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
       ) : (
         <>
           {userData?.id === post.createdBy ? (
-            <SpaceCard
+            <SpaceAlertDialog
               open={openStartSpaceDialog}
               onOpenChange={setOpenStartSpaceDialog}
               post={post}
             >
-              <Podcast size={18} />
-              <span>Start now</span>
-            </SpaceCard>
+              <>
+                {post.status === PostStatus.ended ? (
+                  <>
+                    <BadgeInfo size={18} />
+                    View Details
+                  </>
+                ) : (
+                  <>
+                    {post.status === PostStatus.live ? (
+                      <>
+                        <span className="h-5 w-5 animate-pulse rounded-full bg-rose-500"></span>
+                        <span className="font-bold text-rose-500">LIVE</span>
+                      </>
+                    ) : (
+                      <>
+                        <Podcast size={18} />
+                        <span>Start now</span>
+                      </>
+                    )}
+                  </>
+                )}
+              </>
+            </SpaceAlertDialog>
+          ) : post.status === PostStatus.ended ? (
+            <>
+              <BadgeInfo size={18} />
+              View Details
+            </>
+          ) : post.status === PostStatus.live ? (
+            <>
+              <span className="h-5 w-5 animate-pulse rounded-full bg-rose-500"></span>
+              <span className="font-bold text-rose-500">LIVE</span>
+            </>
+          ) : reminder?.data.isReminderSet ? (
+            <>
+              <BadgeCheck size={18} />
+              <span>Reminder set</span>
+            </>
           ) : (
             <>
-              {reminder?.data.isReminderSet ? (
-                <>
-                  <BadgeCheck size={18} />
-                  <span>Reminder set</span>
-                </>
-              ) : (
-                <>
-                  <Bell size={18} />
-                  <span>Set Reminder</span>
-                </>
-              )}
+              <Bell size={18} />
+              <span>Set Reminder</span>
             </>
           )}
         </>

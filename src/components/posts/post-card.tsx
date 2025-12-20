@@ -4,10 +4,11 @@ import { UsersAPI } from '@/api/users/users.api'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/libs/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { MessageCircle, Mic, PlusCircle, Share2, ThumbsUp } from 'lucide-react'
+import { MessageCircle, PlusCircle, Share2, ThumbsUp } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
+import { MiniSpaceStatusView } from '../spaces/mini-space-status'
 import { CreatedUpdatePostDialog } from './create-update-post-dialog'
 import { PostHeader } from './post-card-header'
 import { ReminderCard } from './reminder'
@@ -69,14 +70,7 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
         )}
       </div>
 
-      {post.type === 'SPACE' && (
-        <div className="px-4 pt-4">
-          <span className="inline-flex items-center space-x-1 rounded-full bg-blue-300 px-3 py-1 text-xs font-semibold text-white">
-            <Mic size={20} className="ml-1" />
-            <span>Upcoming Space</span>
-          </span>
-        </div>
-      )}
+      {post.type === 'SPACE' && <MiniSpaceStatusView choice={post.status} />}
 
       {/* Content */}
       <div className="p-4 px-4 pb-4">
