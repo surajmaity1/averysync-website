@@ -16,6 +16,7 @@ export const CreatePostButton = ({ defaultData }: CreatePostButtonProps) => {
   const createPostMutation = useMutation({
     mutationFn: PostsApi.createPost.fn,
     onSuccess: (response) => {
+      void queryClient.invalidateQueries({ queryKey: PostsApi.getPosts.key })
       toast.success('Post created')
       setShowCreatePostForm(false)
     },

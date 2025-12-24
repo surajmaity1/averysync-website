@@ -2,8 +2,8 @@ const GoogleIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="24px"
-      height="24ps"
+      width="20px"
+      height="20ps"
       viewBox="-3 0 262 262"
       preserveAspectRatio="xMidYMid"
     >

@@ -2,18 +2,18 @@
 
 import { applicationConfig } from '@/config/app-config'
 import { useAuth } from '@/hooks/useAuth'
-import { AlertDialogTrigger } from '@radix-ui/react-alert-dialog'
+// import { AlertDialogTrigger } from '@radix-ui/react-alert-dialog'
 import { Link } from '@tanstack/react-router'
-import { XIcon } from 'lucide-react'
+// import { XIcon } from 'lucide-react'
 import { useState } from 'react'
-import { GoogleIcon, LinkedInIcon } from '../icons/signin-button-icons'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogPortal,
-  AlertDialogTitle,
-} from '../ui/alert-dialog'
+import { GoogleIcon } from '../icons/signin-button-icons'
+// import {
+//   AlertDialog,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogPortal,
+//   AlertDialogTitle,
+// } from '../ui/alert-dialog'
 import { Button } from '../ui/button'
 import { Skeleton } from '../ui/skeleton'
 
@@ -36,12 +36,19 @@ export const SignInButton = () => {
 
   if (isLoggedIn) {
     return (
-      <Button>
+      <Button className="bg-blue-600 text-white hover:bg-blue-700">
         <Link to="/feed">Open Feed</Link>
       </Button>
     )
   }
 
+  return (
+    <Button className="gap-2" onClick={handleSignIn}>
+      <GoogleIcon /> Sign in
+    </Button>
+  )
+
+  /*
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
@@ -78,4 +85,5 @@ export const SignInButton = () => {
       </AlertDialogPortal>
     </AlertDialog>
   )
+    */
 }

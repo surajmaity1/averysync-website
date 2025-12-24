@@ -1,3 +1,10 @@
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+.eslintrc.json
+.vscode/launch.json
+index.html
+postcss.config.mjs
+prettier.config.ts
+vercel.json
+vite.config.ts
