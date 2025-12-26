@@ -7,10 +7,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { MessageCircle, PlusCircle, Share2, ThumbsUp } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Shimmer } from '../common/shimmer'
 import { MiniSpaceStatusView } from '../spaces/mini-space-status'
 import { CreatedUpdatePostDialog } from './create-update-post-dialog'
 import { PostHeader } from './post-card-header'
+import { PostOptionsMenu } from './post-option-menu'
 import { ReminderCard } from './reminder'
 
 type CardProps = {
@@ -20,100 +20,135 @@ type CardProps = {
 }
 
 export const Card = ({ className = '', post, onClick }: CardProps) => {
-  const {
-    data: user,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: user } = useQuery({
     queryKey: UsersAPI.getUserById.key({ userId: post.createdBy }),
     queryFn: () => UsersAPI.getUserById.fn({ userId: post.createdBy }),
   })
 
-  const handleLike = (e: React.MouseEvent) => {
+  const { data: currentLoggedInUser } = useQuery({
+    queryKey: UsersAPI.getUserInfo.key,
+    queryFn: UsersAPI.getUserInfo.fn,
+  })
+
+  const handleLike = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     toast.info('Like feature coming soon!')
   }
 
-  const handleComment = (e: React.MouseEvent) => {
+  const handleComment = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     toast.info('Comment feature coming soon!')
   }
 
-  const handleShare = (e: React.MouseEvent) => {
+  const handleFooterShare = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
-    toast.info('Share feature coming soon!')
+    navigator.clipboard.writeText(`${window.location.origin}/feed/${post.id}`)
+    toast.success('Link copied to clipboard')
+  }
+
+  const handleMenuEdit = () => {
+    toast.success('edit feature coming soon!')
+  }
+
+  const handleMenuDelete = () => {
+    toast.error('Deleted feature coming soon!')
+  }
+
+  const handleMenuShare = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/feed/${post.id}`)
+    toast.success('Link copied to clipboard')
   }
 
   return (
     <article
       className={cn(
-        'mx-auto mb-6 max-w-md cursor-pointer items-center space-x-1 overflow-hidden rounded-lg border border-gray-300 shadow-lg transition-colors',
-        post.type == 'SPACE' && 'bg-blue-50',
+        'mx-auto mb-6 max-w-md cursor-pointer rounded-lg border border-gray-300 bg-white shadow-lg transition-colors',
+        post.type === 'SPACE' && 'bg-blue-50/50',
         className,
       )}
       onClick={onClick}
     >
-      <div className="flex items-center gap-3 px-4 pt-4">
-        {user ? (
-          <PostHeader post={post} user={user} />
-        ) : (
-          <>
-            {/* Avatar shimmer */}
-            <Shimmer className="animate-shimmer h-10 w-10 rounded-full bg-gradient-to-r from-gray-400 via-gray-200 to-gray-400 bg-[length:200%_100%] shadow-sm" />
+      <div className="flex items-start justify-between px-4 pt-4">
+        <div className="flex items-center gap-3">
+          {user ? (
+            <PostHeader post={post} user={user} />
+          ) : (
+            <>
+              <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
 
-            {/* Name + date shimmer */}
-            <div className="flex flex-1 items-center gap-2">
-              <Shimmer className="animate-shimmer h-4 w-24 rounded bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300 bg-[length:200%_100%]" />
-              <Shimmer className="animate-shimmer h-3 w-20 rounded bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300 bg-[length:200%_100%]" />
-            </div>
-          </>
-        )}
+              <div className="flex flex-col gap-2">
+                <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+                <div className="h-3 w-16 animate-pulse rounded bg-gray-200" />
+              </div>
+            </>
+          )}
+        </div>
+        <PostOptionsMenu
+          onEdit={handleMenuEdit}
+          onDelete={handleMenuDelete}
+          onShare={handleMenuShare}
+          manage={post.createdBy === currentLoggedInUser?.id}
+        />
       </div>
 
       {post.type === 'SPACE' && <MiniSpaceStatusView choice={post.status} />}
 
-      {/* Content */}
-      <div className="p-4 px-4 pb-4">
-        <h2 className="mb-2 text-xl font-semibold text-gray-900">
+      <div className="p-4">
+        <h2 className="mb-2 text-xl leading-snug font-semibold text-gray-900">
           {post.title}
         </h2>
-        <p className="text-base text-gray-700">{post.description}</p>
+        <p className="line-clamp-3 text-base text-gray-700">
+          {post.description}
+        </p>
       </div>
 
-      {/* Set Reminder Section — only for SPACE type */}
       {post.type === 'SPACE' && (
-        <div className="mt-4 flex justify-center">
+        <div className="mt-2 mb-4 flex justify-center px-4">
           <ReminderCard post={post} />
         </div>
       )}
 
-      {/* Icon Buttons */}
-      <div className="flex justify-between border-t border-gray-200 px-4 py-2 text-gray-600">
+      <div className="flex justify-between rounded-b-lg border-t border-gray-100 bg-gray-50/50 px-4 py-3 text-gray-500">
         <button
+          type="button"
           onClick={handleLike}
-          className="flex cursor-pointer items-center space-x-1 hover:text-blue-500"
+          className="group flex items-center gap-1.5 transition-colors hover:text-blue-600"
         >
-          <ThumbsUp size={20} />
-          <span className="text-sm">Like</span>
+          <ThumbsUp
+            size={18}
+            className="transition-transform group-active:scale-90"
+          />
+          <span className="text-sm font-medium">Like</span>
         </button>
+
         <button
+          type="button"
           onClick={handleComment}
-          className="flex cursor-pointer items-center space-x-1 hover:text-blue-500"
+          className="group flex items-center gap-1.5 transition-colors hover:text-blue-600"
         >
-          <MessageCircle size={20} />
-          <span className="text-sm">Comment</span>
+          <MessageCircle
+            size={18}
+            className="transition-transform group-active:scale-90"
+          />
+          <span className="text-sm font-medium">Comment</span>
         </button>
+
         <button
-          onClick={handleShare}
-          className="flex cursor-pointer items-center space-x-1 hover:text-blue-500"
+          type="button"
+          onClick={handleFooterShare}
+          className="group flex items-center gap-1.5 transition-colors hover:text-blue-600"
         >
-          <Share2 size={20} />
-          <span className="text-sm">Share</span>
+          <Share2
+            size={18}
+            className="transition-transform group-active:scale-90"
+          />
+          <span className="text-sm font-medium">Share</span>
         </button>
       </div>
     </article>
   )
 }
+
 interface EmptyCardProps {
   className?: string
   defaultData?: any
