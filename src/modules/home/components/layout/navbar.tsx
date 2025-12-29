@@ -1,24 +1,37 @@
-// src/components/home/Navbar.tsx
 import { SignInButton } from '@/components/buttons/signin-button'
 import { ChevronRight, Menu, X } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { NAV_LINKS } from '../data/data'
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const lastScrollY = useRef(0)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
+      const currentScrollY = window.scrollY
+
+      setIsScrolled(currentScrollY > 10)
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setIsVisible(false)
+      } else {
+        setIsVisible(true)
+      }
+
+      lastScrollY.current = currentScrollY
     }
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-in-out ${
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-in-out ${
+        isVisible || mobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
+      } ${
         isScrolled || mobileMenuOpen
           ? 'bg-white/80 py-3 shadow-sm backdrop-blur-md'
           : 'bg-transparent py-6'
@@ -26,7 +39,7 @@ export const Navbar: React.FC = () => {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+        
           <div className="group flex cursor-pointer items-center gap-2.5">
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg ring-1 shadow-slate-200/20 ring-slate-900/5 transition-all duration-300 group-hover:scale-105 group-hover:rotate-3 group-hover:shadow-slate-200/30">
               <img
@@ -40,7 +53,6 @@ export const Navbar: React.FC = () => {
             </span>
           </div>
 
-          {/* Desktop Navigation - Floating Pill */}
           <nav className="hidden items-center gap-1 rounded-full border border-slate-200/60 bg-white/60 p-1.5 px-2 shadow-sm backdrop-blur-md transition-all hover:border-slate-300/80 hover:bg-white/80 hover:shadow-md md:flex">
             {NAV_LINKS.map((link) => (
               <a
@@ -53,10 +65,8 @@ export const Navbar: React.FC = () => {
             ))}
           </nav>
 
-          {/* Right Actions */}
           <div className="flex items-center gap-4">
             <SignInButton />
-            {/* Mobile Toggle */}
             <div className="md:hidden">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

@@ -59,16 +59,20 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
     toast.success('Link copied to clipboard')
   }
 
+  const isSpace = post.type === 'SPACE'
+
   return (
     <article
       className={cn(
-        'mx-auto mb-6 max-w-md cursor-pointer rounded-lg border border-gray-300 bg-white shadow-lg transition-colors',
-        post.type === 'SPACE' && 'bg-blue-50/50',
+        'group relative flex flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/40',
+        isSpace
+          ? 'border-blue-100 ring-4 ring-blue-50/30'
+          : 'border-slate-200 hover:border-slate-300',
         className,
       )}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between px-4 pt-4">
+      <div className="flex items-start justify-between px-6 pt-6">
         <div className="flex items-center gap-3">
           {user ? (
             <PostHeader post={post} user={user} />
@@ -91,58 +95,62 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
         />
       </div>
 
-      {post.type === 'SPACE' && <MiniSpaceStatusView choice={post.status} />}
+      {isSpace && (
+        <div className="px-6 pt-2">
+          <MiniSpaceStatusView choice={post.status} />
+        </div>
+      )}
 
-      <div className="p-4">
-        <h2 className="mb-2 text-xl leading-snug font-semibold text-gray-900">
+      <div className="flex-1 px-6 py-4">
+        <h2 className="mb-2 text-xl font-bold tracking-tight text-slate-900">
           {post.title}
         </h2>
-        <p className="line-clamp-3 text-base text-gray-700">
+        <p className="line-clamp-3 text-base leading-relaxed text-slate-600">
           {post.description}
         </p>
       </div>
 
-      {post.type === 'SPACE' && (
-        <div className="mt-2 mb-4 flex justify-center px-4">
+      {isSpace && (
+        <div className="mt-2 mb-6 flex justify-center px-6">
           <ReminderCard post={post} />
         </div>
       )}
 
-      <div className="flex justify-between rounded-b-lg border-t border-gray-100 bg-gray-50/50 px-4 py-3 text-gray-500">
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-3 text-slate-500">
         <button
           type="button"
           onClick={handleLike}
-          className="group flex items-center gap-1.5 transition-colors hover:text-blue-600"
+          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all hover:bg-white hover:text-blue-600 hover:shadow-sm"
         >
           <ThumbsUp
             size={18}
-            className="transition-transform group-active:scale-90"
+            className="transition-transform duration-300 group-hover:-rotate-12 group-active:scale-90"
           />
-          <span className="text-sm font-medium">Like</span>
+          <span>Like</span>
         </button>
 
         <button
           type="button"
           onClick={handleComment}
-          className="group flex items-center gap-1.5 transition-colors hover:text-blue-600"
+          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all hover:bg-white hover:text-blue-600 hover:shadow-sm"
         >
           <MessageCircle
             size={18}
-            className="transition-transform group-active:scale-90"
+            className="transition-transform duration-300 group-hover:scale-110 group-active:scale-90"
           />
-          <span className="text-sm font-medium">Comment</span>
+          <span>Comment</span>
         </button>
 
         <button
           type="button"
           onClick={handleFooterShare}
-          className="group flex items-center gap-1.5 transition-colors hover:text-blue-600"
+          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all hover:bg-white hover:text-blue-600 hover:shadow-sm"
         >
           <Share2
             size={18}
-            className="transition-transform group-active:scale-90"
+            className="transition-transform duration-300 group-hover:rotate-12 group-active:scale-90"
           />
-          <span className="text-sm font-medium">Share</span>
+          <span>Share</span>
         </button>
       </div>
     </article>
@@ -171,26 +179,25 @@ export const EmptyCard = ({ className = '', defaultData }: EmptyCardProps) => {
   })
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center">
+    <div className="flex min-h-[60vh] items-center justify-center p-4">
       <article
         className={cn(
-          'flex max-w-md flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white p-8 text-center shadow-sm transition-all hover:border-blue-400 hover:shadow-md',
+          'flex w-full max-w-lg flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-slate-300 bg-slate-50/50 p-12 text-center transition-all hover:border-blue-300 hover:bg-blue-50/30',
           className,
         )}
       >
-        <div className="flex flex-col items-center space-y-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500">
-            <PlusCircle size={28} />
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+            <PlusCircle size={32} className="text-blue-500" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h2 className="text-xl font-bold text-slate-900">
             Create your first post
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="max-w-xs text-sm leading-relaxed text-slate-500">
             You haven’t created any posts yet. Click below to share something
             new!
           </p>
 
-          {/* Create Post Dialog inside */}
           <CreatedUpdatePostDialog
             open={showCreatePostForm}
             isMutationPending={createPostMutation.isPending}
@@ -208,7 +215,7 @@ export const EmptyCard = ({ className = '', defaultData }: EmptyCardProps) => {
           >
             <Button
               onClick={() => setShowCreatePostForm(true)}
-              className="mt-3 rounded-full bg-blue-500 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+              className="mt-4 rounded-full bg-blue-600 px-8 py-6 text-base font-bold text-white shadow-lg shadow-blue-200 transition-all hover:scale-105 hover:bg-blue-700 hover:shadow-blue-300"
             >
               Create Post
             </Button>
