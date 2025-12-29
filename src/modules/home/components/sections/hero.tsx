@@ -5,7 +5,6 @@ import React from 'react'
 export const Hero: React.FC = () => {
   return (
     <section className="relative overflow-hidden bg-slate-50 pt-16 pb-32 lg:pt-32">
-      {/* Background Grid */}
       <div
         className="absolute inset-0 z-0 opacity-30"
         style={{
@@ -14,45 +13,46 @@ export const Hero: React.FC = () => {
         }}
       ></div>
 
-      {/* Gradient Blob */}
       <div className="absolute -top-24 -right-24 -z-10 h-[500px] w-[500px] rounded-full bg-blue-400/20 blur-3xl filter" />
       <div className="absolute top-1/2 -left-24 -z-10 h-[400px] w-[400px] rounded-full bg-indigo-400/20 blur-3xl filter" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-8">
-          {/* Left Content */}
           <div className="flex flex-col justify-center">
-            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-blue-50/50 px-3 py-1 text-xs font-semibold text-blue-600 backdrop-blur-sm">
+            <div className="mx-auto mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-blue-50/50 px-3 py-1 text-xs font-semibold text-blue-600 backdrop-blur-sm">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500"></span>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
               </span>
-              Live Now: System Design w/ @alex_dev
+              LIVE: 2 active spaces right now
             </div>
 
             <h1 className="mb-6 text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-              Where code finds its <span className="text-blue-600">voice</span>.
+              Connect in real-time{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                with global tech minds
+              </span>
             </h1>
 
             <p className="mb-8 max-w-lg text-lg leading-relaxed text-slate-600">
-              Stop typing, start talking. The first real-time audio platform
-              built specifically for engineering context. Debug, design, and
-              deploy together.
+              Experience real-time professional networking on{' '}
+              <strong>Averysync</strong> via live spaces. Make{' '}
+              <strong>Averysync</strong> your daily stage for career growth.
             </p>
 
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 to="/feed"
-                className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-8 py-4 text-base font-bold text-white transition-all hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20"
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700"
               >
-                Start Listening
+                Start a Space
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/feed"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-base font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
               >
-                View Schedule
+                Explore Live Spaces
               </Link>
             </div>
 
@@ -68,13 +68,11 @@ export const Hero: React.FC = () => {
                   />
                 ))}
               </div>
-              <p>Joined by 10,000+ devs</p>
+              <p>Joined by 10,000+ techies</p>
             </div>
           </div>
 
-          {/* Right Visuals - Floating Cards Composition */}
           <div className="relative mt-16 h-[450px] w-full sm:h-[500px] lg:mt-0 lg:h-full lg:min-h-[500px]">
-            {/* Card 1: The "Space" */}
             <div className="absolute top-0 right-4 z-20 w-72 scale-95 rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl shadow-slate-200/50 transition-transform duration-700 hover:-translate-y-2 sm:right-10 sm:w-80 sm:scale-100 lg:top-10">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -90,7 +88,7 @@ export const Hero: React.FC = () => {
                 </span>
               </div>
               <h3 className="mb-2 text-lg font-bold text-slate-900">
-                Scaling Postgres to 10TB
+                Scaling Backend
               </h3>
               <div className="mb-6 flex flex-wrap gap-2">
                 <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600">
@@ -116,12 +114,11 @@ export const Hero: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1 text-slate-400">
                   <Users className="h-4 w-4" />
-                  <span className="text-xs font-medium">248</span>
+                  <span className="text-xs font-medium">24</span>
                 </div>
               </div>
             </div>
 
-            {/* Card 2: The "Code" Context */}
             <div className="absolute top-36 left-0 z-10 w-64 scale-95 -rotate-3 rounded-3xl border border-slate-200 bg-slate-900 p-5 shadow-2xl transition-transform duration-500 hover:scale-105 hover:rotate-0 sm:top-40 sm:w-72 sm:scale-100">
               <div className="mb-3 flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-red-500"></div>
@@ -142,8 +139,6 @@ export const Hero: React.FC = () => {
                 <p>{'}'}</p>
               </div>
             </div>
-
-            {/* Card 3: The "Reaction" */}
             <div className="absolute right-4 bottom-4 z-30 w-60 scale-95 rotate-6 rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-xl backdrop-blur-md transition-transform duration-500 hover:rotate-0 sm:right-20 sm:bottom-20 sm:w-64 sm:scale-100">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 flex-shrink-0 rounded-full bg-indigo-100 p-1">

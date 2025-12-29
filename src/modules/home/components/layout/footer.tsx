@@ -1,11 +1,4 @@
-import {
-  ArrowRight,
-  Cpu,
-  Github,
-  Linkedin,
-  Twitter,
-  Youtube,
-} from 'lucide-react'
+import { ArrowRight, Github, Linkedin, Twitter, Youtube } from 'lucide-react'
 import React from 'react'
 
 export const Footer: React.FC = () => {
@@ -18,8 +11,12 @@ export const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="lg:col-span-4">
             <div className="mb-6 flex items-center gap-2.5 text-white">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-900/20">
-                <Cpu className="h-6 w-6 text-white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-white/5">
+                <img
+                  src="/favicon.ico"
+                  alt="Averysync Logo"
+                  className="h-6 w-6"
+                />
               </div>
               <span className="text-xl font-bold tracking-tight">
                 Averysync
@@ -92,7 +89,7 @@ export const Footer: React.FC = () => {
               <form className="flex flex-col gap-2">
                 <input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Enter your email | Feature coming soon"
                   className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
                 <button

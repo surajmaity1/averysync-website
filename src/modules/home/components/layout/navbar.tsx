@@ -1,6 +1,6 @@
 // src/components/home/Navbar.tsx
 import { SignInButton } from '@/components/buttons/signin-button'
-import { ChevronRight, Cpu, Menu, X } from 'lucide-react'
+import { ChevronRight, Menu, X } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { NAV_LINKS } from '../data/data'
 
@@ -28,8 +28,12 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="group flex cursor-pointer items-center gap-2.5">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20 transition-all duration-300 group-hover:scale-105 group-hover:rotate-3 group-hover:shadow-blue-500/30">
-              <Cpu className="h-5 w-5 text-white transition-transform duration-500 group-hover:rotate-180" />
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg ring-1 shadow-slate-200/20 ring-slate-900/5 transition-all duration-300 group-hover:scale-105 group-hover:rotate-3 group-hover:shadow-slate-200/30">
+              <img
+                src="/favicon.ico"
+                alt="Averysync Logo"
+                className="h-6 w-6 transition-transform duration-500 group-hover:rotate-180"
+              />
             </div>
             <span className="text-lg font-bold tracking-tight text-slate-900 transition-colors group-hover:text-blue-600">
               Averysync
@@ -50,33 +54,32 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Right Actions */}
-          <div className="hidden items-center gap-4 md:flex">
+          <div className="flex items-center gap-4">
             <SignInButton />
-          </div>
-
-          {/* Mobile Toggle */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="group relative z-50 rounded-xl bg-white/50 p-2 transition-colors hover:bg-slate-100"
-            >
-              <div className="relative h-6 w-6 transition-all duration-300">
-                <Menu
-                  className={`absolute inset-0 h-6 w-6 text-slate-600 transition-all duration-300 ${
-                    mobileMenuOpen
-                      ? 'rotate-90 opacity-0'
-                      : 'rotate-0 opacity-100'
-                  }`}
-                />
-                <X
-                  className={`absolute inset-0 h-6 w-6 text-slate-600 transition-all duration-300 ${
-                    mobileMenuOpen
-                      ? 'rotate-0 opacity-100'
-                      : '-rotate-90 opacity-0'
-                  }`}
-                />
-              </div>
-            </button>
+            {/* Mobile Toggle */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="group relative z-50 rounded-xl bg-white/50 p-2 transition-colors hover:bg-slate-100"
+              >
+                <div className="relative h-6 w-6 transition-all duration-300">
+                  <Menu
+                    className={`absolute inset-0 h-6 w-6 text-slate-600 transition-all duration-300 ${
+                      mobileMenuOpen
+                        ? 'rotate-90 opacity-0'
+                        : 'rotate-0 opacity-100'
+                    }`}
+                  />
+                  <X
+                    className={`absolute inset-0 h-6 w-6 text-slate-600 transition-all duration-300 ${
+                      mobileMenuOpen
+                        ? 'rotate-0 opacity-100'
+                        : '-rotate-90 opacity-0'
+                    }`}
+                  />
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -100,9 +103,6 @@ export const Navbar: React.FC = () => {
               <ChevronRight className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
             </a>
           ))}
-          <div className="mt-4 flex justify-center border-t border-slate-100 pt-6">
-            <SignInButton />
-          </div>
         </div>
       </div>
     </header>

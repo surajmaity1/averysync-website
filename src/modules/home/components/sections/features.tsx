@@ -12,13 +12,12 @@ export const Features: React.FC = () => {
           <div className="max-w-2xl">
             <SectionLabel>Capabilities</SectionLabel>
             <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Everything you need to <span className="text-blue-600">sync</span>{' '}
-              better.
+              Where voice <span className="text-blue-600">meets</span>{' '}
+              opportunity
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-slate-600">
-              Built for the modern engineering stack. We've reimagined how
-              technical teams communicate, moving beyond text to high-fidelity
-              audio spaces.
+              A platform designed to humanize the tech industry. Speak, listen,
+              and build your professional reputation.
             </p>
           </div>
           <a
