@@ -4,21 +4,28 @@ import React from 'react'
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <footer className="bg-slate-950 pt-24 pb-12 text-slate-400">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
-          {/* Brand Column */}
+  
           <div className="lg:col-span-4">
-            <div className="mb-6 flex items-center gap-2.5 text-white">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-white/5">
+            <div
+              onClick={scrollToTop}
+              className="group mb-6 flex cursor-pointer items-center gap-2.5 text-white"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-white/5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
                 <img
                   src="/favicon.ico"
                   alt="Averysync Logo"
                   className="h-6 w-6"
                 />
               </div>
-              <span className="text-xl font-bold tracking-tight">
+              <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-blue-400">
                 Averysync
               </span>
             </div>
@@ -35,7 +42,6 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Links Columns */}
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:pl-12">
             <div>
               <h3 className="mb-4 text-sm font-semibold tracking-wider text-white uppercase">
