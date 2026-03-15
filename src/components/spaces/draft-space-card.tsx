@@ -23,8 +23,8 @@ type SpaceAlertDialogProps = {
   post: Post
   children: ReactNode
 }
-const draftWebsocketURL =
-  'http://ec2-3-90-240-241.compute-1.amazonaws.com:8080/ws'
+
+const draftWebsocketURL = 'https://staging-stream.averysync.com/ws'
 
 export const SpaceAlertDialog = ({
   open,
