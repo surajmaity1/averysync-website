@@ -23,6 +23,8 @@ type SpaceAlertDialogProps = {
   post: Post
   children: ReactNode
 }
+const draftWebsocketURL =
+  'http://ec2-3-90-240-241.compute-1.amazonaws.com:8080/ws'
 
 export const SpaceAlertDialog = ({
   open,
@@ -105,7 +107,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
       const spaceData = (data as any)?.data || data
       const token = data?.token
       console.log('token 11', token)
-      const wsUrl = 'http://localhost:8999/ws'
+      const wsUrl = draftWebsocketURL
 
       if (token && wsUrl) {
         joinAttemptedRef.current = true
@@ -138,7 +140,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
       // Extract token and websocket URL from response
       if (response?.token) {
         const token = response?.token
-        const websocket_url = `http://localhost:8999/ws`
+        const websocket_url = draftWebsocketURL
 
         // Update state
         setConnectionToken(response.token)
@@ -226,7 +228,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
       console.log('spaceData', spaceData)
       console.log('token', token)
 
-      const wsUrl = `http://localhost:8999/ws`
+      const wsUrl = draftWebsocketURL
       console.log('wsUrl', wsUrl)
 
       if (token && wsUrl) {
