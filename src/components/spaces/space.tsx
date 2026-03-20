@@ -251,7 +251,7 @@ const SpaceComponent: React.FC<SpaceComponentProps> = ({ spaceId }) => {
         </div>
 
         {/* Debug Info (remove in production) */}
-        {
+        {import.meta.env.DEV && (
           <div className="mt-6 rounded bg-gray-100 p-4 text-xs">
             <p>Space ID: {spaceData.id}</p>
             <p>Status: {spaceData.status}</p>
@@ -259,7 +259,7 @@ const SpaceComponent: React.FC<SpaceComponentProps> = ({ spaceId }) => {
             <p>Token: {spaceData.token ? 'Present' : 'None'}</p>
             <p>WebSocket URL: {spaceData.websocket_url || 'None'}</p>
           </div>
-        }
+        )}
       </div>
     </div>
   )
