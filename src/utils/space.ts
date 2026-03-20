@@ -1,14 +1,14 @@
 import { toast } from 'sonner'
 
 const doOffer = async (p2pConnection: any, websocket: any) => {
-  console.log('Starting negotiation (doOffer)...')
+  // console.log('Starting negotiation (doOffer)...')
   try {
-    console.log('Creating offer...')
+    // console.log('Creating offer...')
     const offer = await p2pConnection.createOffer()
-    console.log('Setting local description...')
+    // console.log('Setting local description...')
     await p2pConnection.setLocalDescription(offer)
 
-    console.log('Sending offer via WebSocket...')
+    // console.log('Sending offer via WebSocket...')
     websocket.send(
       JSON.stringify({
         type: 'offer',
@@ -22,7 +22,6 @@ const doOffer = async (p2pConnection: any, websocket: any) => {
 
 export const startStreaming = async (p2pConnection: any, websocket: any) => {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    console.log('inside came')
     toast.error(
       'Camera/Mic API is blocked. You must access this site via HTTPS or localhost.',
     )
@@ -34,20 +33,20 @@ export const startStreaming = async (p2pConnection: any, websocket: any) => {
     video: false,
   })
 
-  console.log('stream id', stream.id)
+  // console.log('stream id', stream.id)
 
   p2pConnection = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   })
 
   stream.getTracks().forEach((track) => {
-    console.log(`Adding track with label: ${track.label}`)
+    // console.log(`Adding track with label: ${track.label}`)
     p2pConnection.addTrack(track, stream)
   })
 
   p2pConnection.onicecandidate = (event: any) => {
     if (event.candidate) {
-      console.log('Sending ICE candidate')
+      // console.log('Sending ICE candidate')
       websocket.send(
         JSON.stringify({ type: 'candidate', candidate: event.candidate }),
       )
@@ -55,9 +54,9 @@ export const startStreaming = async (p2pConnection: any, websocket: any) => {
   }
 
   p2pConnection.ontrack = (event: any) => {
-    console.log(
-      `Remote stream received: ${event.track.label} , ${event.track.kind}`,
-    )
+    // console.log(
+    //   `Remote stream received: ${event.track.label} , ${event.track.kind}`,
+    // )
   }
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -69,44 +68,42 @@ export const startStreaming = async (p2pConnection: any, websocket: any) => {
   websocket = new WebSocket(webSocketURL)
 
   websocket.onopen = async () => {
-    console.log('WebSocket connection opened')
+    // console.log('WebSocket connection opened')
     await doOffer(p2pConnection, websocket)
   }
-  console.log('coming 3')
+
   websocket.onmessage = async (event: any) => {
     const msg = JSON.parse(event.data)
-    console.log('Received WebSocket message:', msg.type)
-    console.log('coming 3.1')
+    // console.log('Received WebSocket message:', msg.type)
     if (msg.type === 'answer') {
-      console.log("Processing 'answer' message...")
+      // console.log("Processing 'answer' message...")
       try {
         await p2pConnection.setRemoteDescription({
           type: 'answer',
           sdp: msg.sdp,
         })
-        console.log('Remote description set successfully')
-        console.log('Status: WebRTC Connected')
-        console.log('coming 4')
+        // console.log('Remote description set successfully')
+        // console.log('Status: WebRTC Connected')
       } catch (err) {
         console.error('SetRemoteDescription Error:', err)
       }
     } else if (msg.type === 'candidate') {
-      console.log('Received ICE candidate')
+      // console.log('Received ICE candidate')
       try {
         await p2pConnection.addIceCandidate(msg.candidate)
       } catch (e) {
         console.error('Error adding received ice candidate', e)
       }
     } else if (msg.type === 'negotiate') {
-      console.log('Renegotiation requested by server')
+      // console.log('Renegotiation requested by server')
       // Avoid race conditions: only renegotiate if we are stable
       if (p2pConnection.signalingState === 'stable') {
         await doOffer(p2pConnection, websocket)
       } else {
-        console.log(
-          'Ignored renegotiation request because signaling state is ' +
-            p2pConnection.signalingState,
-        )
+        // console.log(
+        //   'Ignored renegotiation request because signaling state is ' +
+        //     p2pConnection.signalingState,
+        // )
       }
     }
   }
@@ -116,9 +113,7 @@ export const startStreaming = async (p2pConnection: any, websocket: any) => {
   }
 
   websocket.onclose = () => {
-    console.log('WebSocket connection closed')
+    // console.log('WebSocket connection closed')
     p2pConnection.close()
   }
-
-  console.log('end')
 }

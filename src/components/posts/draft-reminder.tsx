@@ -100,7 +100,7 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
 
     // If user is NOT the host and space is LIVE
     if (post.status === PostStatus.live) {
-      console.log('Non-host user joining live space:', post.id)
+      // console.log('Non-host user joining live space:', post.id)
       setOpenListenerDialog(true)
       return
     }
@@ -114,7 +114,6 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
   }
 
   const isHost = userData?.id === post.createdBy
-  console.log('button clicked 1')
 
   return (
     <>

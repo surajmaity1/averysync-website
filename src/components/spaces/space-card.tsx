@@ -92,14 +92,12 @@ const SpaceDetailView = ({ post }: SpaceDetailViewProps) => {
 
   const handleStarEndSpace = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    console.log('start space-card.tsx')
     // let websocket: any
     // let p2pConnection: any
 
     postMutation.mutate()
     // // await startStreaming(p2pConnection, websocket)
 
-    console.log('end space-card.tsx')
     /*
     // const doOffer = async () => {
     //   console.log('Starting negotiation (doOffer)...')

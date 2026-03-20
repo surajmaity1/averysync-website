@@ -41,7 +41,7 @@ class SpaceStreamManager {
         throw new Error('Media devices not supported')
       }
 
-      console.log('Requesting microphone access...')
+      // console.log('Requesting microphone access...')
 
       // Get user media
       this.localStream = await navigator.mediaDevices.getUserMedia({
@@ -53,7 +53,7 @@ class SpaceStreamManager {
         video: false,
       })
 
-      console.log('✓ Microphone access granted:', this.localStream.id)
+      // console.log('✓ Microphone access granted:', this.localStream.id)
 
       // Create peer connection
       this.peerConnection = new RTCPeerConnection({
@@ -63,11 +63,11 @@ class SpaceStreamManager {
         ],
       })
 
-      console.log('✓ Peer connection created')
+      // console.log('✓ Peer connection created')
 
       // Add local tracks
       this.localStream.getTracks().forEach((track) => {
-        console.log(`Adding track: ${track.label} (${track.kind})`)
+        // console.log(`Adding track: ${track.label} (${track.kind})`)
         this.peerConnection!.addTrack(track, this.localStream!)
       })
 
@@ -77,7 +77,7 @@ class SpaceStreamManager {
       // Connect WebSocket
       await this.connectWebSocket(token, websocketUrl)
 
-      console.log('✓ Space streaming started successfully')
+      // console.log('✓ Space streaming started successfully')
     } catch (error) {
       console.error('Failed to start streaming:', error)
       toast.error(
@@ -94,7 +94,7 @@ class SpaceStreamManager {
     // ICE candidates
     this.peerConnection.onicecandidate = (event) => {
       if (event.candidate && this.websocket?.readyState === WebSocket.OPEN) {
-        console.log('→ Sending ICE candidate')
+        // console.log('→ Sending ICE candidate')
         this.websocket.send(
           JSON.stringify({
             type: 'candidate',
@@ -107,18 +107,18 @@ class SpaceStreamManager {
     // ICE connection state
     this.peerConnection.oniceconnectionstatechange = () => {
       const state = this.peerConnection?.iceConnectionState
-      console.log('ICE connection state:', state)
+      // console.log('ICE connection state:', state)
 
       if (state === 'failed' || state === 'disconnected') {
         toast.error('Connection lost. Attempting to reconnect...')
       } else if (state === 'connected') {
-        console.log('✓ ICE connected')
+        // console.log('✓ ICE connected')
       }
     }
 
     // Remote tracks
     this.peerConnection.ontrack = (event) => {
-      console.log(`← Remote track received: ${event.track.kind}`)
+      // console.log(`← Remote track received: ${event.track.kind}`)
 
       const [remoteStream] = event.streams
       if (remoteStream) {
@@ -130,7 +130,7 @@ class SpaceStreamManager {
     // Connection state
     this.peerConnection.onconnectionstatechange = () => {
       const state = this.peerConnection?.connectionState
-      console.log('Peer connection state:', state)
+      // console.log('Peer connection state:', state)
 
       if (state) {
         this.onConnectionStateChange?.(state as RTCPeerConnectionState)
@@ -146,13 +146,13 @@ class SpaceStreamManager {
 
     // Negotiation needed
     this.peerConnection.onnegotiationneeded = async () => {
-      console.log('Negotiation needed')
+      // console.log('Negotiation needed')
 
       if (
         this.isNegotiating ||
         this.peerConnection?.signalingState !== 'stable'
       ) {
-        console.log('Already negotiating, skipping...')
+        // console.log('Already negotiating, skipping...')
         return
       }
 
@@ -171,12 +171,12 @@ class SpaceStreamManager {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const wsUrl = `${websocketUrl}?token=${token}`
-      console.log('Connecting to WebSocket:', wsUrl)
+      // console.log('Connecting to WebSocket:', wsUrl)
 
       this.websocket = new WebSocket(wsUrl)
 
       this.websocket.onopen = async () => {
-        console.log('✓ WebSocket connected')
+        // console.log('✓ WebSocket connected')
         try {
           await this.createAndSendOffer()
           resolve()
@@ -188,7 +188,7 @@ class SpaceStreamManager {
       this.websocket.onmessage = async (event) => {
         try {
           const msg = JSON.parse(event.data)
-          console.log('← WebSocket message:', msg.type)
+          // console.log('← WebSocket message:', msg.type)
           await this.handleWebSocketMessage(msg)
         } catch (error) {
           console.error('Error handling message:', error)
@@ -202,7 +202,7 @@ class SpaceStreamManager {
       }
 
       this.websocket.onclose = (event) => {
-        console.log('WebSocket closed:', event.code, event.reason)
+        // console.log('WebSocket closed:', event.code, event.reason)
         if (!event.wasClean) {
           toast.error('Connection lost')
         }
@@ -223,17 +223,17 @@ class SpaceStreamManager {
       throw new Error('Peer connection or WebSocket not initialized')
     }
 
-    console.log('→ Creating offer...')
+    // console.log('→ Creating offer...')
     const offer = await this.peerConnection.createOffer({
       offerToReceiveAudio: true,
       offerToReceiveVideo: false,
     })
 
-    console.log('→ Setting local description...')
+    // console.log('→ Setting local description...')
     await this.peerConnection.setLocalDescription(offer)
 
     if (this.websocket.readyState === WebSocket.OPEN) {
-      console.log('→ Sending offer via WebSocket')
+      // console.log('→ Sending offer via WebSocket')
       this.websocket.send(
         JSON.stringify({
           type: 'offer',
@@ -248,7 +248,7 @@ class SpaceStreamManager {
 
     switch (msg.type) {
       case 'answer':
-        console.log('← Processing answer...')
+        // console.log('← Processing answer...')
         // An answer should only be set if the connection is in a state that expects one.
         if (this.peerConnection.signalingState === 'have-local-offer') {
           try {
@@ -258,7 +258,7 @@ class SpaceStreamManager {
                 sdp: msg.sdp,
               }),
             )
-            console.log('✓ Remote description set')
+            // console.log('✓ Remote description set')
           } catch (error) {
             console.error('Error setting remote description:', error)
           }
@@ -266,7 +266,7 @@ class SpaceStreamManager {
         break
 
       case 'candidate':
-        console.log('← Received ICE candidate')
+        // console.log('← Received ICE candidate')
         try {
           if (msg.candidate) {
             await this.peerConnection.addIceCandidate(
@@ -279,7 +279,7 @@ class SpaceStreamManager {
         break
 
       case 'negotiate':
-        console.log('← Renegotiation requested')
+        // console.log('← Renegotiation requested')
         if (
           this.peerConnection.signalingState === 'stable' &&
           !this.isNegotiating
@@ -313,7 +313,7 @@ class SpaceStreamManager {
     audio.autoplay = true
     audio.id = `remote-audio-${stream.id}`
     this.audioRef.appendChild(audio)
-    console.log('✓ Playing remote stream')
+    // console.log('✓ Playing remote stream')
   }
 
   toggleMute(muted: boolean): void {
@@ -321,18 +321,18 @@ class SpaceStreamManager {
       this.localStream.getAudioTracks().forEach((track) => {
         track.enabled = !muted
       })
-      console.log(`Audio ${muted ? 'muted' : 'unmuted'}`)
+      // console.log(`Audio ${muted ? 'muted' : 'unmuted'}`)
     }
   }
 
   cleanup(): void {
-    console.log('Cleaning up WebRTC connection...')
+    // console.log('Cleaning up WebRTC connection...')
 
     // Stop local tracks
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => {
         track.stop()
-        console.log(`Stopped track: ${track.label}`)
+        // console.log(`Stopped track: ${track.label}`)
       })
       this.localStream = null
     }
@@ -355,7 +355,7 @@ class SpaceStreamManager {
     }
 
     this.isNegotiating = false
-    console.log('✓ Cleanup complete')
+    // console.log('✓ Cleanup complete')
   }
 
   async getStats(): Promise<RTCStatsReport | null> {

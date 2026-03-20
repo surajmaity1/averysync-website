@@ -107,7 +107,6 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
   if (isLoading) {
     return <ReminderButtonSkeleton />
   }
-  console.log('button clicked 2')
 
   return (
     <Button

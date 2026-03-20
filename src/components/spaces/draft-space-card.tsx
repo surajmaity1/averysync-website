@@ -220,16 +220,15 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
 
   // Handle join space for listeners
   const handleJoinSpace = async (e: React.MouseEvent) => {
-    console.log('1')
     e.stopPropagation()
     if (data) {
       const spaceData = (data as any)?.data || data
       const token = data.token
-      console.log('spaceData', spaceData)
-      console.log('token', token)
+      // console.log('spaceData', spaceData)
+      // console.log('token', token)
 
       const wsUrl = draftWebsocketURL
-      console.log('wsUrl', wsUrl)
+      // console.log('wsUrl', wsUrl)
 
       if (token && wsUrl) {
         setConnectionToken(token)
