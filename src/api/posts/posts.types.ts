@@ -50,6 +50,7 @@ export type GetPostByIdRequestDTO = {
 
 export type PostDTO = {
   data: Post
+  token: string
 }
 
 export type Reminder = {

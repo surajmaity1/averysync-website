@@ -8,7 +8,8 @@ import { BadgeCheck, BadgeInfo, Bell, Loader, Podcast } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
-import { SpaceAlertDialog } from '../spaces/space-card'
+// import { SpaceAlertDialog } from '../spaces/space-card'
+import { SpaceAlertDialog } from '../spaces/draft-space-card'
 import { Button } from '../ui/button'
 
 const ReminderButtonSkeleton = () => {
@@ -84,7 +85,7 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
     if (post.status === PostStatus.ended) {
       // TODO: view details dialog
       setOpenStartSpaceDialog(false)
-      toast.success('View details view coming soon')
+      toast.success('View details coming soon')
       return
     }
 
@@ -96,8 +97,7 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
     }
 
     if (post.status === PostStatus.live) {
-      // TODO: Implement listerner view dialog
-      toast.success('Listerner view view coming soon')
+      setOpenStartSpaceDialog(true)
       return
     }
 
@@ -163,10 +163,16 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
               View Details
             </>
           ) : post.status === PostStatus.live ? (
-            <>
-              <span className="h-5 w-5 animate-pulse rounded-full bg-rose-500"></span>
-              <span className="font-bold text-rose-500">LIVE</span>
-            </>
+            <SpaceAlertDialog
+              open={openStartSpaceDialog}
+              onOpenChange={setOpenStartSpaceDialog}
+              post={post}
+            >
+              <>
+                <span className="h-5 w-5 animate-pulse rounded-full bg-rose-500"></span>
+                <span className="font-bold text-rose-500">Join LIVE</span>
+              </>
+            </SpaceAlertDialog>
           ) : reminder?.data.isReminderSet ? (
             <>
               <BadgeCheck size={18} />
