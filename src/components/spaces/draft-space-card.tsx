@@ -106,7 +106,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     ) {
       const spaceData = (data as any)?.data || data
       const token = data?.token
-      console.log('token 11', token)
+      // console.log('token 11', token)
       const wsUrl = draftWebsocketURL
 
       if (token && wsUrl) {
