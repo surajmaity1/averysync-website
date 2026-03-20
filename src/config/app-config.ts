@@ -8,6 +8,7 @@ const applicationConfigSchema = z.object({
   backendApplicationURL: z
     .string()
     .min(3, { error: 'Backend Application URL required' }),
+  streamURL: z.string().min(3, { error: 'Backend Application URL required' }),
   isDev: z.boolean(),
 })
 
@@ -17,6 +18,7 @@ export const applicationConfig: TApplicationConfig = {
   applicationName: 'Averysync',
   applicationDescription: 'Connect with friends',
   backendApplicationURL: import.meta.env.VITE_BACKEND_API_URL,
+  streamURL: import.meta.env.VITE_STREAM_URL,
   isDev: import.meta.env.DEV,
 }
 

@@ -1,6 +1,7 @@
 import { PostsApi } from '@/api/posts/posts.api'
 import { Post } from '@/api/posts/posts.types'
 import { UsersAPI } from '@/api/users/users.api'
+import { applicationConfig } from '@/config/app-config'
 import { cn } from '@/libs/utils'
 import { SpaceStatus } from '@/types/post'
 import { useSpaceStreaming } from '@/utils/stream'
@@ -24,7 +25,7 @@ type SpaceAlertDialogProps = {
   children: ReactNode
 }
 
-const draftWebsocketURL = 'https://staging-stream.averysync.com/ws'
+const draftWebsocketURL = `${applicationConfig.streamURL}/ws`
 
 export const SpaceAlertDialog = ({
   open,
