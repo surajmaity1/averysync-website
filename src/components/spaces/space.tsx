@@ -86,7 +86,6 @@ const SpaceComponent: React.FC<SpaceComponentProps> = ({ spaceId }) => {
 
   // Join an existing live space
   const handleJoinSpace = async () => {
-    console.log('2')
     if (!spaceData?.token || !spaceData?.websocket_url) {
       toast.error('Space connection details not available')
       return
@@ -146,7 +145,7 @@ const SpaceComponent: React.FC<SpaceComponentProps> = ({ spaceId }) => {
         audio.autoplay = true
         audio.id = `remote-audio-${index}`
         audioRef.current?.appendChild(audio)
-        console.log(`Playing remote stream ${index}`)
+        // console.log(`Playing remote stream ${index}`)
       })
     }
   }, [remoteStreams])
