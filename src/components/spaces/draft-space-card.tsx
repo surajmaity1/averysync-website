@@ -397,7 +397,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
       )}
 
       {/* Debug Info (only in development) */}
-      {
+      {import.meta.env.DEV && (
         <details className="mt-4 text-xs">
           <summary className="cursor-pointer text-gray-500">Debug Info</summary>
           <div className="mt-2 space-y-1 rounded bg-gray-100 p-3">
@@ -411,7 +411,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
             <p>Is Muted: {isMuted ? 'Yes' : 'No'}</p>
           </div>
         </details>
-      }
+      )}
     </div>
   )
 }
