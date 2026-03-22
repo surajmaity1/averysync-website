@@ -1,439 +1,407 @@
-// hooks/useSpaceStreaming.ts
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-interface WebRTCConfig {
-  token: string
-  websocketUrl: string
+// ─── Wire protocol types (must match Go server domain/models.go) ─────────────
+
+type MsgType =
+  | 'offer'
+  | 'answer'
+  | 'ice_candidate' // both directions — was 'candidate' on client before (bug #1)
+  | 'end_space'
+  | 'space_ended'
+  | 'peer_joined'
+  | 'peer_left'
+  | 'error'
+
+interface Signal {
+  type: MsgType
+  sdp?: string
+  candidate?: RTCIceCandidateInit
+  peer_id?: string
+  message?: string
 }
 
-class SpaceStreamManager {
-  private peerConnection: RTCPeerConnection | null = null
-  private websocket: WebSocket | null = null
-  private localStream: MediaStream | null = null
-  private isNegotiating = false
-  private onConnectionStateChange?: (state: RTCPeerConnectionState) => void
-  private onTrackReceived?: (stream: MediaStream) => void
-  private audioRef: HTMLDivElement | null = null
+// ─── Callbacks exposed to the React layer ────────────────────────────────────
 
-  constructor(
-    config: WebRTCConfig,
-    callbacks?: {
-      onConnectionStateChange?: (state: RTCPeerConnectionState) => void
-      onTrackReceived?: (stream: MediaStream) => void
-    },
-  ) {
-    this.onConnectionStateChange = callbacks?.onConnectionStateChange
-    this.onTrackReceived = callbacks?.onTrackReceived
+interface ManagerCallbacks {
+  onConnectionStateChange: (state: RTCPeerConnectionState) => void
+  onTrackReceived: (stream: MediaStream) => void
+  onSpaceEnded: (message: string) => void
+  onPeerJoined: (peerId: string) => void
+  onPeerLeft: (peerId: string) => void
+}
+
+// ─── SpaceStreamManager ──────────────────────────────────────────────────────
+
+class SpaceStreamManager {
+  private pc: RTCPeerConnection | null = null
+  private ws: WebSocket | null = null
+  private localStream: MediaStream | null = null
+  private audioContainer: HTMLDivElement | null = null
+
+  // Guards a single in-flight offer/answer cycle.
+  // After the initial handshake the SERVER drives all renegotiation by
+  // sending offers; we never self-initiate again.  This prevents glare.
+  private isNegotiating = false
+
+  private callbacks: ManagerCallbacks
+
+  constructor(callbacks: ManagerCallbacks) {
+    this.callbacks = callbacks
   }
 
-  setAudioContainer(ref: HTMLDivElement | null) {
-    this.audioRef = ref
+  setAudioContainer(el: HTMLDivElement | null) {
+    this.audioContainer = el
   }
 
   async startStreaming(token: string, websocketUrl: string): Promise<void> {
-    try {
-      // Check media device support
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast.error(
-          'Camera/Mic API is blocked. Access via HTTPS or localhost required.',
-        )
-        throw new Error('Media devices not supported')
-      }
-
-      // console.log('Requesting microphone access...')
-
-      // Get user media
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: false,
-      })
-
-      // console.log('✓ Microphone access granted:', this.localStream.id)
-
-      // Create peer connection
-      this.peerConnection = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-        ],
-      })
-
-      // console.log('✓ Peer connection created')
-
-      // Add local tracks
-      this.localStream.getTracks().forEach((track) => {
-        // console.log(`Adding track: ${track.label} (${track.kind})`)
-        this.peerConnection!.addTrack(track, this.localStream!)
-      })
-
-      // Setup handlers
-      this.setupPeerConnectionHandlers()
-
-      // Connect WebSocket
-      await this.connectWebSocket(token, websocketUrl)
-
-      // console.log('✓ Space streaming started successfully')
-    } catch (error) {
-      console.error('Failed to start streaming:', error)
-      toast.error(
-        'Failed to start streaming. Check your microphone permissions.',
-      )
-      this.cleanup()
-      throw error
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error('getUserMedia not available — use HTTPS or localhost')
     }
+
+    this.localStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+      video: false,
+    })
+
+    this.pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+    })
+
+    // Add local mic tracks BEFORE wiring handlers so the server-side
+    // AddTransceiverFromKind(recvonly) has something to match against.
+    this.localStream.getTracks().forEach((t) => {
+      this.pc!.addTrack(t, this.localStream!)
+    })
+
+    this.wirePeerHandlers()
+
+    // Open WebSocket — initial offer is sent inside onopen.
+    await this.connectWebSocket(token, websocketUrl)
   }
 
-  private setupPeerConnectionHandlers(): void {
-    if (!this.peerConnection) return
+  // ── Peer connection event handlers ─────────────────────────────────────────
 
-    // ICE candidates
-    this.peerConnection.onicecandidate = (event) => {
-      if (event.candidate && this.websocket?.readyState === WebSocket.OPEN) {
-        // console.log('→ Sending ICE candidate')
-        this.websocket.send(
-          JSON.stringify({
-            type: 'candidate',
-            candidate: event.candidate.toJSON(),
-          }),
-        )
+  private wirePeerHandlers(): void {
+    const pc = this.pc!
+
+    // BUG FIX #1: was 'candidate', server expects 'ice_candidate'
+    pc.onicecandidate = ({ candidate }) => {
+      if (candidate)
+        this.send({ type: 'ice_candidate', candidate: candidate.toJSON() })
+    }
+
+    pc.oniceconnectionstatechange = () => {
+      const s = pc.iceConnectionState
+      if (s === 'failed' || s === 'disconnected') {
+        toast.error('ICE connection lost')
       }
     }
 
-    // ICE connection state
-    this.peerConnection.oniceconnectionstatechange = () => {
-      const state = this.peerConnection?.iceConnectionState
-      // console.log('ICE connection state:', state)
-
-      if (state === 'failed' || state === 'disconnected') {
-        toast.error('Connection lost. Attempting to reconnect...')
-      } else if (state === 'connected') {
-        // console.log('✓ ICE connected')
-      }
+    // BUG FIX #4 + #5: audio is managed entirely here via audioContainer.
+    // The React hook exposes remoteStreams purely for the participant count UI.
+    pc.ontrack = ({ track, streams }) => {
+      const stream = streams[0] ?? new MediaStream([track])
+      this.playAudio(stream)
+      this.callbacks.onTrackReceived(stream)
     }
 
-    // Remote tracks
-    this.peerConnection.ontrack = (event) => {
-      // console.log(`← Remote track received: ${event.track.kind}`)
-
-      const [remoteStream] = event.streams
-      if (remoteStream) {
-        this.playRemoteStream(remoteStream)
-        this.onTrackReceived?.(remoteStream)
-      }
-    }
-
-    // Connection state
-    this.peerConnection.onconnectionstatechange = () => {
-      const state = this.peerConnection?.connectionState
-      // console.log('Peer connection state:', state)
-
-      if (state) {
-        this.onConnectionStateChange?.(state as RTCPeerConnectionState)
-      }
-
-      if (state === 'connected') {
-        toast.success('Connected to space')
-      } else if (state === 'failed') {
-        toast.error('Connection failed')
+    pc.onconnectionstatechange = () => {
+      const s = pc.connectionState
+      this.callbacks.onConnectionStateChange(s as RTCPeerConnectionState)
+      if (s === 'failed') {
+        toast.error('WebRTC connection failed')
         this.cleanup()
       }
     }
 
-    // Negotiation needed
-    this.peerConnection.onnegotiationneeded = async () => {
-      // console.log('Negotiation needed')
-
-      if (
-        this.isNegotiating ||
-        this.peerConnection?.signalingState !== 'stable'
-      ) {
-        // console.log('Already negotiating, skipping...')
-        return
-      }
-
-      try {
-        this.isNegotiating = true
-        await this.createAndSendOffer()
-      } finally {
-        this.isNegotiating = false
-      }
-    }
+    // BUG FIX #3: remove onnegotiationneeded self-initiation.
+    // The Go SFU drives all renegotiation by sending offers to the client
+    // when a new track is fanned out.  If the client also self-initiates
+    // on negotiationneeded, both sides send offers simultaneously (SDP glare).
+    // We only send the very first offer ourselves (in websocket.onopen).
+    pc.onnegotiationneeded = null
   }
 
-  private async connectWebSocket(
-    token: string,
-    websocketUrl: string,
-  ): Promise<void> {
+  // ── WebSocket ───────────────────────────────────────────────────────────────
+
+  private connectWebSocket(token: string, url: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const wsUrl = `${websocketUrl}?token=${token}`
-      // console.log('Connecting to WebSocket:', wsUrl)
+      const wsUrl = `${url}?token=${token}`
+      this.ws = new WebSocket(wsUrl)
 
-      this.websocket = new WebSocket(wsUrl)
+      const timeout = setTimeout(() => {
+        if (this.ws?.readyState !== WebSocket.OPEN) {
+          reject(new Error('WebSocket connection timed out'))
+        }
+      }, 10_000)
 
-      this.websocket.onopen = async () => {
-        // console.log('✓ WebSocket connected')
+      this.ws.onopen = async () => {
+        clearTimeout(timeout)
         try {
-          await this.createAndSendOffer()
+          // Send the one and only client-initiated offer.
+          await this.sendOffer()
           resolve()
-        } catch (error) {
-          reject(error)
+        } catch (err) {
+          reject(err)
         }
       }
 
-      this.websocket.onmessage = async (event) => {
+      this.ws.onmessage = async ({ data }) => {
         try {
-          const msg = JSON.parse(event.data)
-          // console.log('← WebSocket message:', msg.type)
-          await this.handleWebSocketMessage(msg)
-        } catch (error) {
-          console.error('Error handling message:', error)
+          await this.handleMessage(JSON.parse(data) as Signal)
+        } catch (err) {
+          console.error('[SFU] message handling error', err)
         }
       }
 
-      this.websocket.onerror = (error) => {
-        console.error('WebSocket error:', error)
-        toast.error('WebSocket connection error')
-        reject(error)
+      this.ws.onerror = (err) => {
+        clearTimeout(timeout)
+        console.error('[SFU] WebSocket error', err)
+        reject(new Error('WebSocket error'))
       }
 
-      this.websocket.onclose = (event) => {
-        // console.log('WebSocket closed:', event.code, event.reason)
-        if (!event.wasClean) {
-          toast.error('Connection lost')
-        }
+      this.ws.onclose = ({ wasClean, code, reason }) => {
+        if (!wasClean) toast.error(`Connection closed (${code} ${reason})`)
         this.cleanup()
       }
-
-      // Connection timeout
-      setTimeout(() => {
-        if (this.websocket?.readyState !== WebSocket.OPEN) {
-          reject(new Error('WebSocket connection timeout'))
-        }
-      }, 10000)
     })
   }
 
-  private async createAndSendOffer(): Promise<void> {
-    if (!this.peerConnection || !this.websocket) {
-      throw new Error('Peer connection or WebSocket not initialized')
-    }
+  // ── Signaling message dispatch ──────────────────────────────────────────────
 
-    // console.log('→ Creating offer...')
-    const offer = await this.peerConnection.createOffer({
-      offerToReceiveAudio: true,
-      offerToReceiveVideo: false,
-    })
-
-    // console.log('→ Setting local description...')
-    await this.peerConnection.setLocalDescription(offer)
-
-    if (this.websocket.readyState === WebSocket.OPEN) {
-      // console.log('→ Sending offer via WebSocket')
-      this.websocket.send(
-        JSON.stringify({
-          type: 'offer',
-          sdp: offer.sdp,
-        }),
-      )
-    }
-  }
-
-  private async handleWebSocketMessage(msg: any): Promise<void> {
-    if (!this.peerConnection) return
+  private async handleMessage(msg: Signal): Promise<void> {
+    const pc = this.pc
+    if (!pc) return
 
     switch (msg.type) {
+      // ── Server's answer to our initial offer ────────────────────────────────
       case 'answer':
-        // console.log('← Processing answer...')
-        // An answer should only be set if the connection is in a state that expects one.
-        if (this.peerConnection.signalingState === 'have-local-offer') {
-          try {
-            await this.peerConnection.setRemoteDescription(
-              new RTCSessionDescription({
-                type: 'answer',
-                sdp: msg.sdp,
-              }),
-            )
-            // console.log('✓ Remote description set')
-          } catch (error) {
-            console.error('Error setting remote description:', error)
-          }
+        if (pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription(
+            new RTCSessionDescription({ type: 'answer', sdp: msg.sdp! }),
+          )
         }
         break
 
-      case 'candidate':
-        // console.log('← Received ICE candidate')
+      // ── BUG FIX #2: server-initiated renegotiation offer ───────────────────
+      // When a new speaker joins, the Go SFU adds a track to every other peer's
+      // PeerConnection and sends a fresh offer.  We must respond with an answer.
+      case 'offer':
+        if (this.isNegotiating) return
+        this.isNegotiating = true
         try {
-          if (msg.candidate) {
-            await this.peerConnection.addIceCandidate(
-              new RTCIceCandidate(msg.candidate),
-            )
-          }
-        } catch (error) {
-          console.error('Error adding ICE candidate:', error)
+          await pc.setRemoteDescription(
+            new RTCSessionDescription({ type: 'offer', sdp: msg.sdp! }),
+          )
+          const answer = await pc.createAnswer()
+          await pc.setLocalDescription(answer)
+          this.send({ type: 'answer', sdp: answer.sdp! })
+        } finally {
+          this.isNegotiating = false
         }
         break
 
-      case 'negotiate':
-        // console.log('← Renegotiation requested')
-        if (
-          this.peerConnection.signalingState === 'stable' &&
-          !this.isNegotiating
-        ) {
-          this.isNegotiating = true
-          try {
-            await this.createAndSendOffer()
-          } finally {
-            this.isNegotiating = false
-          }
+      // ── BUG FIX #1: server sends 'ice_candidate', not 'candidate' ──────────
+      case 'ice_candidate':
+        if (msg.candidate) {
+          await pc.addIceCandidate(new RTCIceCandidate(msg.candidate))
         }
+        break
+
+      case 'space_ended':
+        toast.info(msg.message ?? 'The host has ended this Space')
+        this.callbacks.onSpaceEnded(msg.message ?? '')
+        this.cleanup()
+        break
+
+      case 'peer_joined':
+        this.callbacks.onPeerJoined(msg.peer_id ?? '')
+        break
+
+      case 'peer_left':
+        this.callbacks.onPeerLeft(msg.peer_id ?? '')
+        break
+
+      case 'error':
+        toast.error(msg.message ?? 'Server error')
         break
 
       default:
-        console.warn('Unknown message type:', msg.type)
+        console.warn('[SFU] unknown message type:', (msg as any).type)
     }
   }
 
-  private playRemoteStream(stream: MediaStream): void {
-    if (!this.audioRef) {
-      console.warn('Audio container not set, creating audio element in body')
-      const audio = document.createElement('audio')
-      audio.srcObject = stream
-      audio.autoplay = true
-      document.body.appendChild(audio)
-      return
-    }
+  // ── Helpers ─────────────────────────────────────────────────────────────────
 
+  private async sendOffer(): Promise<void> {
+    const pc = this.pc!
+    if (this.isNegotiating || pc.signalingState !== 'stable') return
+    this.isNegotiating = true
+    try {
+      const offer = await pc.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: false,
+      })
+      await pc.setLocalDescription(offer)
+      this.send({ type: 'offer', sdp: offer.sdp! })
+    } finally {
+      this.isNegotiating = false
+    }
+  }
+
+  private send(sig: Signal): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(sig))
+    }
+  }
+
+  // BUG FIX #4 + #5: single source of truth for audio playback.
+  // The component attaches the hook's audioContainerRef to a hidden <div>;
+  // this method appends <audio> elements into it.  No duplicate playback.
+  private playAudio(stream: MediaStream): void {
     const audio = document.createElement('audio')
     audio.srcObject = stream
     audio.autoplay = true
+    audio.setAttribute('playsinline', '')
     audio.id = `remote-audio-${stream.id}`
-    this.audioRef.appendChild(audio)
-    // console.log('✓ Playing remote stream')
+
+    if (this.audioContainer) {
+      this.audioContainer.appendChild(audio)
+    } else {
+      // Last-resort fallback — should not happen if the ref is wired correctly
+      document.body.appendChild(audio)
+      console.warn('[SFU] audioContainer not set — audio appended to body')
+    }
   }
 
   toggleMute(muted: boolean): void {
-    if (this.localStream) {
-      this.localStream.getAudioTracks().forEach((track) => {
-        track.enabled = !muted
-      })
-      // console.log(`Audio ${muted ? 'muted' : 'unmuted'}`)
-    }
+    this.localStream?.getAudioTracks().forEach((t) => {
+      t.enabled = !muted
+    })
+  }
+
+  sendEndSpace(): void {
+    this.send({ type: 'end_space' })
   }
 
   cleanup(): void {
-    // console.log('Cleaning up WebRTC connection...')
+    this.localStream?.getTracks().forEach((t) => t.stop())
+    this.localStream = null
 
-    // Stop local tracks
-    if (this.localStream) {
-      this.localStream.getTracks().forEach((track) => {
-        track.stop()
-        // console.log(`Stopped track: ${track.label}`)
-      })
-      this.localStream = null
+    if (this.pc) {
+      this.pc.ontrack = null
+      this.pc.onicecandidate = null
+      this.pc.onconnectionstatechange = null
+      this.pc.oniceconnectionstatechange = null
+      this.pc.close()
+      this.pc = null
     }
 
-    // Close peer connection
-    if (this.peerConnection) {
-      this.peerConnection.close()
-      this.peerConnection = null
+    if (this.ws) {
+      this.ws.onclose = null // prevent cleanup loop
+      this.ws.close()
+      this.ws = null
     }
 
-    // Close WebSocket
-    if (this.websocket) {
-      this.websocket.close()
-      this.websocket = null
-    }
-
-    // Clear audio elements
-    if (this.audioRef) {
-      this.audioRef.innerHTML = ''
-    }
-
+    if (this.audioContainer) this.audioContainer.innerHTML = ''
     this.isNegotiating = false
-    // console.log('✓ Cleanup complete')
-  }
-
-  async getStats(): Promise<RTCStatsReport | null> {
-    return this.peerConnection ? await this.peerConnection.getStats() : null
   }
 }
 
-// React Hook
+// ─── React hook ──────────────────────────────────────────────────────────────
+
 export const useSpaceStreaming = () => {
-  const [streamManager, setStreamManager] = useState<SpaceStreamManager | null>(
-    null,
-  )
+  const managerRef = useRef<SpaceStreamManager | null>(null)
+
   const [isConnected, setIsConnected] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([])
+
+  // BUG FIX #5: this ref is passed to the hidden <div> in the component so
+  // SpaceStreamManager always has a valid DOM node for audio elements.
   const audioContainerRef = useRef<HTMLDivElement>(null)
 
-  const startSpace = async (token: string, websocketUrl: string) => {
-    try {
-      const manager = new SpaceStreamManager(
-        { token, websocketUrl },
-        {
-          onConnectionStateChange: (state) => {
-            setIsConnected(state === 'connected')
-          },
-          onTrackReceived: (stream) => {
-            setRemoteStreams((prev) => [...prev, stream])
-          },
-        },
-      )
+  const startSpace = useCallback(
+    async (token: string, websocketUrl: string) => {
+      // Tear down any existing session first (e.g. listener rejoining).
+      managerRef.current?.cleanup()
 
-      if (audioContainerRef.current) {
-        manager.setAudioContainer(audioContainerRef.current)
-      }
+      const manager = new SpaceStreamManager({
+        onConnectionStateChange: (state) => {
+          setIsConnected(state === 'connected')
+        },
+        onTrackReceived: (stream) => {
+          setRemoteStreams((prev) => {
+            // Deduplicate by stream id
+            if (prev.some((s) => s.id === stream.id)) return prev
+            return [...prev, stream]
+          })
+        },
+        onSpaceEnded: () => {
+          setIsConnected(false)
+          setRemoteStreams([])
+          setIsMuted(false)
+        },
+        onPeerJoined: (_peerId) => {
+          // Can be used for participant list UI
+        },
+        onPeerLeft: (peerId) => {
+          setRemoteStreams((prev) => prev.filter((s) => s.id !== peerId))
+        },
+      })
+
+      // Wire audio container BEFORE startStreaming so the first track has a home.
+      manager.setAudioContainer(audioContainerRef.current)
+      managerRef.current = manager
 
       await manager.startStreaming(token, websocketUrl)
-      setStreamManager(manager)
-      toast.success('Joined space successfully')
-    } catch (error) {
-      console.error('Failed to start space:', error)
-      toast.error('Failed to join space')
-      throw error
-    }
-  }
+    },
+    [],
+  )
 
-  const stopSpace = () => {
-    if (streamManager) {
-      streamManager.cleanup()
-      setStreamManager(null)
-      setIsConnected(false)
-      setRemoteStreams([])
-      setIsMuted(false)
-    }
-  }
+  const stopSpace = useCallback(() => {
+    managerRef.current?.cleanup()
+    managerRef.current = null
+    setIsConnected(false)
+    setRemoteStreams([])
+    setIsMuted(false)
+  }, [])
 
-  const toggleMute = () => {
-    if (streamManager) {
-      const newMutedState = !isMuted
-      streamManager.toggleMute(newMutedState)
-      setIsMuted(newMutedState)
-    }
-  }
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => {
+      const next = !prev
+      managerRef.current?.toggleMute(next)
+      return next
+    })
+  }, [])
 
+  const sendEndSpace = useCallback(() => {
+    managerRef.current?.sendEndSpace()
+  }, [])
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (streamManager) {
-        streamManager.cleanup()
-      }
+      managerRef.current?.cleanup()
     }
-  }, [streamManager])
+  }, [])
 
   return {
     startSpace,
     stopSpace,
     toggleMute,
+    sendEndSpace,
     isConnected,
     isMuted,
     remoteStreams,
-    audioContainerRef,
+    audioContainerRef, // attach this to a hidden <div> in the component
   }
 }
