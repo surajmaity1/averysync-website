@@ -1,11 +1,13 @@
 import { PostsApi } from '@/api/posts/posts.api'
 import { Post } from '@/api/posts/posts.types'
+import { UsersAPI } from '@/api/users/users.api'
+import { applicationConfig } from '@/config/app-config'
 import { cn } from '@/libs/utils'
 import { SpaceStatus } from '@/types/post'
-import { startStreaming } from '@/utils/space'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CircleX, Play, XIcon } from 'lucide-react'
-import { ReactNode } from 'react'
+import { useSpaceStreaming } from '@/utils/stream'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { CircleX, Mic, MicOff, Play, Users, XIcon } from 'lucide-react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -23,6 +25,8 @@ type SpaceAlertDialogProps = {
   children: ReactNode
 }
 
+const draftWebsocketURL = `${applicationConfig.streamURL}/ws`
+
 export const SpaceAlertDialog = ({
   open,
   onOpenChange,
@@ -34,19 +38,19 @@ export const SpaceAlertDialog = ({
       <AlertDialogTrigger className="flex space-x-2">
         {children}
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-gray-50">
+      <AlertDialogContent className="max-w-md bg-gray-50">
         <AlertDialogTitle className="font-semibold">
           {post.title}
         </AlertDialogTitle>
         <AlertDialogDescription className="font-light">
           {post.description}
         </AlertDialogDescription>
-        <SpaceDetailView post={post} />
+        <SpaceDetailView post={post} onClose={() => onOpenChange(false)} />
         <Button
           className="absolute top-4 right-4"
           onClick={() => onOpenChange(false)}
         >
-          <XIcon />
+          <XIcon className="h-4 w-4" />
         </Button>
       </AlertDialogContent>
     </AlertDialog>
@@ -55,197 +59,360 @@ export const SpaceAlertDialog = ({
 
 type SpaceDetailViewProps = {
   post: Post
+  onClose: () => void
 }
 
-const SpaceDetailView = ({ post }: SpaceDetailViewProps) => {
+const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
   const queryClient = useQueryClient()
-  const spaceStatus = post.status === 3 || post.status === 1
+  const [isSpaceLive, setIsSpaceLive] = useState(false)
+  const [connectionToken, setConnectionToken] = useState<string | null>(null)
+  const [websocketUrl, setWebsocketUrl] = useState<string | null>(null)
+  const audioRef = useRef<HTMLDivElement>(null)
+  const isLiveRef = useRef(false)
+  const joinAttemptedRef = useRef(false)
 
-  const postMutation = useMutation({
+  const {
+    startSpace,
+    stopSpace,
+    toggleMute,
+    isConnected,
+    isMuted,
+    remoteStreams,
+  } = useSpaceStreaming()
+
+  const spaceStatus = post.status === 3 || post.status === 1
+  const isLiveStatus = post.status === 2
+
+  const { data: userData } = useQuery({
+    queryKey: UsersAPI.getUserInfo.key,
+    queryFn: UsersAPI.getUserInfo.fn,
+  })
+  const isHost = userData?.id === post.createdBy
+
+  // Fetch post data to get token for listeners
+  const { data } = useQuery({
+    queryKey: PostsApi.getPostById.key({ postId: post.id }),
+    queryFn: () => PostsApi.getPostById.fn({ postId: post.id }),
+    enabled: !isHost && isLiveStatus,
+  })
+
+  // Auto-join for listeners
+  useEffect(() => {
+    if (
+      !isHost &&
+      isLiveStatus &&
+      !isConnected &&
+      data &&
+      !joinAttemptedRef.current
+    ) {
+      const spaceData = (data as any)?.data || data
+      const token = data?.token
+      // console.log('token 11', token)
+      const wsUrl = draftWebsocketURL
+
+      if (token && wsUrl) {
+        joinAttemptedRef.current = true
+        setConnectionToken(token)
+        setWebsocketUrl(wsUrl)
+        startSpace(token, wsUrl)
+        setIsSpaceLive(true)
+      }
+    }
+  }, [isHost, isLiveStatus, isConnected, data, startSpace])
+
+  // Start/Update space mutation
+  const startSpaceMutation = useMutation({
     mutationFn: () =>
       PostsApi.updatePostById.fn({
         postId: post.id,
-        status: spaceStatus ? SpaceStatus.live : SpaceStatus.ended,
+        status: SpaceStatus.live,
       }),
-    onSuccess: async () => {
+    onSuccess: async (response: any) => {
       toast.success('Space started', { id: 'start-space' })
+
+      // Invalidate queries
       void queryClient.invalidateQueries({
         queryKey: PostsApi.getPostById.key({ postId: post.id }),
       })
-
       void queryClient.invalidateQueries({
         queryKey: PostsApi.getPosts.key,
       })
 
-      let websocket: any
-      let p2pConnection: any
+      // Extract token and websocket URL from response
+      if (response?.token) {
+        const token = response?.token
+        const websocket_url = draftWebsocketURL
 
-      await startStreaming(p2pConnection, websocket)
+        // Update state
+        setConnectionToken(response.token)
+        setWebsocketUrl(websocket_url)
+
+        // Connect to WebRTC
+        try {
+          await startSpace(response.token, websocket_url)
+          setIsSpaceLive(true)
+          toast.success('Connected to space')
+        } catch (error) {
+          console.error('Failed to connect to space:', error)
+          toast.error('Failed to connect to space')
+        }
+      } else {
+        console.error('No token or websocket URL in response')
+        toast.error('Invalid space configuration')
+      }
     },
     onMutate: () => {
-      toast.loading('Starting the space', { id: 'start-space' })
+      toast.loading('Starting the space...', { id: 'start-space' })
     },
     onError: (error) => {
-      toast.success('Unable to start the space', { id: 'start-space' })
+      console.error('Failed to start space:', error)
+      toast.error('Unable to start the space', { id: 'start-space' })
     },
   })
 
-  const handleStarEndSpace = async (e: React.MouseEvent) => {
+  // End space mutation
+  const endSpaceMutation = useMutation({
+    mutationFn: () =>
+      PostsApi.updatePostById.fn({
+        postId: post.id,
+        status: SpaceStatus.ended,
+      }),
+    onSuccess: async () => {
+      toast.success('Space ended', { id: 'end-space' })
+
+      // Cleanup WebRTC connections
+      stopSpace()
+      setIsSpaceLive(false)
+      setConnectionToken(null)
+      setWebsocketUrl(null)
+
+      // Invalidate queries
+      void queryClient.invalidateQueries({
+        queryKey: PostsApi.getPostById.key({ postId: post.id }),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: PostsApi.getPosts.key,
+      })
+
+      // Close dialog
+      onClose()
+    },
+    onMutate: () => {
+      toast.loading('Ending the space...', { id: 'end-space' })
+    },
+    onError: (error) => {
+      console.error('Failed to end space:', error)
+      toast.error('Unable to end the space', { id: 'end-space' })
+    },
+  })
+
+  // Handle start/end space button click
+  const handleStartEndSpace = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    // let websocket: any
-    // let p2pConnection: any
 
-    postMutation.mutate()
-    // // await startStreaming(p2pConnection, websocket)
-
-    /*
-    // const doOffer = async () => {
-    //   console.log('Starting negotiation (doOffer)...')
-    //   try {
-    //     console.log('Creating offer...')
-    //     const offer = await p2pConnection.createOffer()
-    //     console.log('Setting local description...')
-    //     await p2pConnection.setLocalDescription(offer)
-
-    //     console.log('Sending offer via WebSocket...')
-    //     websocket.send(
-    //       JSON.stringify({
-    //         type: 'offer',
-    //         sdp: offer.sdp,
-    //       }),
-    //     )
-    //   } catch (e) {
-    //     console.error('Error creating offer:', e)
-    //   }
-    // }
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.log('inside came')
-      toast.error(
-        'Camera/Mic API is blocked. You must access this site via HTTPS or localhost.',
-      )
-      return
+    if (spaceStatus) {
+      // Start the space
+      startSpaceMutation.mutate()
+    } else {
+      // End the space
+      endSpaceMutation.mutate()
     }
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: false,
-    })
-
-    console.log('stream id', stream.id)
-
-    p2pConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    })
-
-    stream.getTracks().forEach((track) => {
-      console.log(`Adding track with label: ${track.label}`)
-      p2pConnection.addTrack(track, stream)
-    })
-
-    p2pConnection.onicecandidate = (event: any) => {
-      if (event.candidate) {
-        console.log('Sending ICE candidate')
-        websocket.send(
-          JSON.stringify({ type: 'candidate', candidate: event.candidate }),
-        )
-      }
-    }
-
-    p2pConnection.ontrack = (event: any) => {
-      console.log(
-        `Remote stream received: ${event.track.label} , ${event.track.kind}`,
-      )
-    }
-
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host = 'localhost:8999'
-    const token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZmZmODQ3N2YtMDhiZi00MzczLWIyMWQtMjMxY2VjZDdlNmYxIiwidXNlcm5hbWUiOiJmZmY4NDc3Zi0wOGJmLTQzNzMtYjIxZC0yMzFjZWNkN2U2ZjEiLCJyb29tX2lkIjoiN2YxNjY5YjUtNTVkOC00NmM3LWI2YzgtMjA0OTAzNGZkOTNlIiwiaXNfc3BlYWtlciI6dHJ1ZSwiaXNzIjoiZGphbmdvLWJhY2tlbmQiLCJleHAiOjE3NzE2Mzg2NTEuMTMxMzgyN30.P8BhznQl8QFyHUdDiYrnM7SFy2vmbfOeslIrQwIy3E8'
-    const webSocketURL = `${protocol}//${host}/ws?token=${token}`
-
-    websocket = new WebSocket(webSocketURL)
-
-    websocket.onopen = async () => {
-      console.log('WebSocket connection opened')
-      await doOffer(p2pConnection, websocket)
-    }
-    console.log('coming 3')
-    websocket.onmessage = async (event: any) => {
-      const msg = JSON.parse(event.data)
-      console.log('Received WebSocket message:', msg.type)
-      console.log('coming 3.1')
-      if (msg.type === 'answer') {
-        console.log("Processing 'answer' message...")
-        try {
-          await p2pConnection.setRemoteDescription({
-            type: 'answer',
-            sdp: msg.sdp,
-          })
-          console.log('Remote description set successfully')
-          console.log('Status: WebRTC Connected')
-          console.log('coming 4')
-          postMutation.mutate()
-        } catch (err) {
-          console.error('SetRemoteDescription Error:', err)
-        }
-      } else if (msg.type === 'candidate') {
-        console.log('Received ICE candidate')
-        try {
-          await p2pConnection.addIceCandidate(msg.candidate)
-        } catch (e) {
-          console.error('Error adding received ice candidate', e)
-        }
-      } else if (msg.type === 'negotiate') {
-        console.log('Renegotiation requested by server')
-        // Avoid race conditions: only renegotiate if we are stable
-        if (p2pConnection.signalingState === 'stable') {
-          await doOffer(p2pConnection, websocket)
-        } else {
-          console.log(
-            'Ignored renegotiation request because signaling state is ' +
-              p2pConnection.signalingState,
-          )
-        }
-      }
-    }
-
-    websocket.onerror = (e: any) => {
-      console.error('WebSocket error:', e)
-    }
-
-    websocket.onclose = () => {
-      console.log('WebSocket connection closed')
-      p2pConnection.close()
-    }
-    */
   }
 
+  // Handle join space for listeners
+  const handleJoinSpace = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (data) {
+      const spaceData = (data as any)?.data || data
+      const token = data.token
+      // console.log('spaceData', spaceData)
+      // console.log('token', token)
+
+      const wsUrl = draftWebsocketURL
+      // console.log('wsUrl', wsUrl)
+
+      if (token && wsUrl) {
+        setConnectionToken(token)
+        setWebsocketUrl(wsUrl)
+        try {
+          toast.loading('Joining space...', { id: 'join-space' })
+          await startSpace(token, wsUrl)
+          setIsSpaceLive(true)
+          toast.success('Joined space', { id: 'join-space' })
+        } catch (error) {
+          console.error('Error joining space:', error)
+          toast.error('Failed to join space', { id: 'join-space' })
+        }
+      } else {
+        console.error('Missing connection details:', spaceData)
+        toast.error('Unable to join: Connection details missing')
+      }
+    }
+  }
+
+  // Handle mute toggle
+  const handleToggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    toggleMute()
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isLiveRef.current = isSpaceLive || isConnected
+  }, [isSpaceLive, isConnected])
+
+  useEffect(() => {
+    return () => {
+      if (isLiveRef.current) {
+        stopSpace()
+      }
+    }
+  }, [])
+
+  // Play remote audio streams
+  useEffect(() => {
+    if (audioRef.current && remoteStreams.length > 0) {
+      audioRef.current.innerHTML = ''
+      remoteStreams.forEach((stream, index) => {
+        const audio = document.createElement('audio')
+        audio.srcObject = stream
+        audio.autoplay = true
+        audio.id = `remote-audio-${index}`
+        audioRef.current?.appendChild(audio)
+      })
+    }
+  }, [remoteStreams])
+
   return (
-    <div className="">
-      <div className="mt-12 text-center">
-        <Button
-          onClick={handleStarEndSpace}
-          className={cn(
-            'gap-2 text-white',
-            spaceStatus
-              ? 'bg-blue-500 hover:bg-blue-600'
-              : 'bg-rose-500 hover:bg-rose-600',
-          )}
-        >
-          {spaceStatus ? (
-            <>
-              <Play />
-              Start Now
-            </>
-          ) : (
-            <>
-              <CircleX />
-              End
-            </>
-          )}
-        </Button>
-      </div>
+    <div className="space-y-4">
+      {/* Hidden Audio Container */}
+      <div ref={audioRef} className="hidden" />
+
+      {/* Connection Status Banner */}
+      {isConnected && (
+        <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+              <span className="text-sm font-medium text-green-800">
+                Connected to space
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-green-700">
+              <Users className="h-3 w-3" />
+              <span>{remoteStreams.length + 1} participant(s)</span>
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-green-600">
+            Your audio is {isMuted ? 'muted' : 'live'}
+          </p>
+        </div>
+      )}
+
+      {/* Live Indicator */}
+      {isLiveStatus && !isConnected && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+            <span className="text-sm font-medium text-red-800">
+              Space is Live
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Audio Controls (when connected) */}
+      {isConnected && (
+        <div className="flex gap-2">
+          <Button
+            onClick={handleToggleMute}
+            className={cn(
+              'flex-1',
+              isMuted
+                ? 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100'
+                : 'border-green-300 bg-green-50 hover:bg-green-100',
+            )}
+          >
+            {isMuted ? (
+              <>
+                <MicOff className="mr-2 h-4 w-4" />
+                Unmute
+              </>
+            ) : (
+              <>
+                <Mic className="mr-2 h-4 w-4" />
+                Mute
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Main Action Button */}
+      {isHost && (
+        <div className="mt-6 text-center">
+          <Button
+            onClick={handleStartEndSpace}
+            disabled={
+              startSpaceMutation.isPending || endSpaceMutation.isPending
+            }
+            className={cn(
+              'w-full gap-2 text-white',
+              spaceStatus
+                ? 'bg-blue-500 hover:bg-blue-600'
+                : 'bg-rose-500 hover:bg-rose-600',
+            )}
+          >
+            {startSpaceMutation.isPending || endSpaceMutation.isPending ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                {spaceStatus ? 'Starting...' : 'Ending...'}
+              </>
+            ) : spaceStatus ? (
+              <>
+                <Play className="h-4 w-4" />
+                Start Now
+              </>
+            ) : (
+              <>
+                <CircleX className="h-4 w-4" />
+                End Space
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Join Button for Non-Hosts */}
+      {!isHost && isLiveStatus && !isConnected && (
+        <div className="mt-6 text-center">
+          <Button
+            onClick={handleJoinSpace}
+            disabled={!data}
+            className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
+          >
+            <Play className="h-4 w-4" />
+            Join Space
+          </Button>
+        </div>
+      )}
+
+      {/* Debug Info (only in development) */}
+      {import.meta.env.DEV && (
+        <details className="mt-4 text-xs">
+          <summary className="cursor-pointer text-gray-500">Debug Info</summary>
+          <div className="mt-2 space-y-1 rounded bg-gray-100 p-3">
+            <p>Space ID: {post.id}</p>
+            <p>Status: {post.status}</p>
+            <p>Is Connected: {isConnected ? 'Yes' : 'No'}</p>
+            <p>Is Live: {isSpaceLive ? 'Yes' : 'No'}</p>
+            <p>Token: {connectionToken ? 'Present' : 'None'}</p>
+            <p>WebSocket URL: {websocketUrl || 'None'}</p>
+            <p>Remote Streams: {remoteStreams.length}</p>
+            <p>Is Muted: {isMuted ? 'Yes' : 'No'}</p>
+          </div>
+        </details>
+      )}
     </div>
   )
 }
