@@ -8,8 +8,7 @@ import { BadgeCheck, BadgeInfo, Bell, Loader, Podcast } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Shimmer } from '../common/shimmer'
-// import { SpaceAlertDialog } from '../spaces/space-card'
-import { SpaceAlertDialog } from '../spaces/draft-space-card'
+import { SpaceAlertDialog } from '../spaces/space-card'
 import { Button } from '../ui/button'
 
 const ReminderButtonSkeleton = () => {
