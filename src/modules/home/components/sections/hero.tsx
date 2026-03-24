@@ -1,8 +1,17 @@
+import { applicationConfig } from '@/config/app-config'
+import { useAuth } from '@/hooks/useAuth'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, Radio, Users } from 'lucide-react'
 import React from 'react'
 
 export const Hero: React.FC = () => {
+  const { isLoggedIn, isLoading } = useAuth()
+
+  const handleSignIn = () => {
+    if (isLoggedIn) return
+    window.location.href = `${applicationConfig.backendApplicationURL}/v1/auth/google/login`
+  }
+
   return (
     <section className="relative overflow-hidden bg-slate-50 pt-16 pb-32 lg:pt-32">
       <div
@@ -41,19 +50,43 @@ export const Hero: React.FC = () => {
             </p>
 
             <div className="flex flex-col gap-4 sm:flex-row">
-              <Link
-                to="/feed"
-                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700"
-              >
-                Start a Space
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/feed"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-base font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
-              >
-                Explore Live Spaces
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    to="/feed"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700"
+                  >
+                    Start a Space
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                  <Link
+                    to="/feed"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-base font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    Explore Live Spaces
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <div
+                    onClick={() => {
+                      handleSignIn()
+                    }}
+                    className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700"
+                  >
+                    Start a Space
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </div>
+                  <div
+                    onClick={() => {
+                      handleSignIn()
+                    }}
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-base font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    Explore Live Spaces
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="mt-10 flex items-center gap-4 text-sm text-slate-500">

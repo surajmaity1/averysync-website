@@ -3,7 +3,7 @@ const GoogleIcon = () => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="20px"
-      height="20ps"
+      height="20px"
       viewBox="-3 0 262 262"
       preserveAspectRatio="xMidYMid"
     >

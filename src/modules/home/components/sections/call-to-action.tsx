@@ -1,8 +1,23 @@
-import { Link } from '@tanstack/react-router'
+import { applicationConfig } from '@/config/app-config'
+import { useAuth } from '@/hooks/useAuth'
+import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Sparkles, Zap } from 'lucide-react'
 import React from 'react'
 
 export const CallToAction: React.FC = () => {
+  const navigate = useNavigate()
+  const { isLoggedIn, isLoading } = useAuth()
+
+  const handleSignIn = () => {
+    if (isLoggedIn) {
+      navigate({
+        to: '/feed',
+      })
+      return
+    }
+    window.location.href = `${applicationConfig.backendApplicationURL}/v1/auth/google/login`
+  }
+
   return (
     <section className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-slate-900 px-6 py-20 shadow-2xl sm:px-12 lg:px-20">
@@ -34,21 +49,25 @@ export const CallToAction: React.FC = () => {
           </p>
 
           <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-            <Link
-              to="/feed"
-              className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-white px-8 py-4 text-base font-bold text-slate-900 transition-all hover:scale-105 hover:bg-blue-50"
+            <div
+              onClick={() => {
+                handleSignIn()
+              }}
+              className="group relative inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full bg-white px-8 py-4 text-base font-bold text-slate-900 transition-all hover:scale-105 hover:bg-blue-50"
             >
               <span className="relative z-10">Get Started Now</span>
               <ArrowRight className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
+            </div>
 
-            <Link
-              to="/feed"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-700 bg-slate-800/50 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all hover:border-slate-600 hover:bg-slate-800"
+            <div
+              onClick={() => {
+                handleSignIn()
+              }}
+              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-slate-700 bg-slate-800/50 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all hover:border-slate-600 hover:bg-slate-800"
             >
               <Zap className="h-4 w-4 text-yellow-400" />
               View Live Demo
-            </Link>
+            </div>
           </div>
         </div>
       </div>
