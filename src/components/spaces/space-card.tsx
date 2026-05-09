@@ -47,10 +47,8 @@ export const SpaceAlertDialog = ({
         </AlertDialogDescription>
         <SpaceDetailView post={post} onClose={() => onOpenChange(false)} />
         <Button
-          className="absolute top-4 right-4 bg-rose-500 text-white hover:bg-rose-600"
-          onClick={() => {
-            onOpenChange(false)
-          }}
+          className="absolute top-4 right-4"
+          onClick={() => onOpenChange(false)}
         >
           <XIcon className="h-4 w-4" />
         </Button>
@@ -82,7 +80,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     remoteStreams,
   } = useSpaceStreaming()
 
-  const spaceStatus = post.status === 1
+  const spaceStatus = post.status === 3 || post.status === 1
   const isLiveStatus = post.status === 2
 
   const { data: userData } = useQuery({
@@ -107,7 +105,9 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
       data &&
       !joinAttemptedRef.current
     ) {
+      const spaceData = (data as any)?.data || data
       const token = data?.token
+      // console.log('token 11', token)
       const wsUrl = draftWebsocketURL
 
       if (token && wsUrl) {
@@ -140,6 +140,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
 
       // Extract token and websocket URL from response
       if (response?.token) {
+        const token = response?.token
         const websocket_url = draftWebsocketURL
 
         // Update state
@@ -169,6 +170,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     },
   })
 
+  // End space mutation
   const endSpaceMutation = useMutation({
     mutationFn: () =>
       PostsApi.updatePostById.fn({
@@ -204,23 +206,30 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     },
   })
 
+  // Handle start/end space button click
   const handleStartEndSpace = async (e: React.MouseEvent) => {
     e.stopPropagation()
 
     if (spaceStatus) {
+      // Start the space
       startSpaceMutation.mutate()
     } else {
+      // End the space
       endSpaceMutation.mutate()
     }
   }
 
+  // Handle join space for listeners
   const handleJoinSpace = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (data) {
       const spaceData = (data as any)?.data || data
       const token = data.token
+      // console.log('spaceData', spaceData)
+      // console.log('token', token)
 
       const wsUrl = draftWebsocketURL
+      // console.log('wsUrl', wsUrl)
 
       if (token && wsUrl) {
         setConnectionToken(token)
@@ -276,8 +285,10 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Hidden Audio Container */}
       <div ref={audioRef} className="hidden" />
 
+      {/* Connection Status Banner */}
       {isConnected && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3">
           <div className="flex items-center justify-between">
@@ -298,6 +309,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         </div>
       )}
 
+      {/* Live Indicator */}
       {isLiveStatus && !isConnected && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3">
           <div className="flex items-center gap-2">
@@ -309,6 +321,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         </div>
       )}
 
+      {/* Audio Controls (when connected) */}
       {isConnected && (
         <div className="flex gap-2">
           <Button
@@ -335,6 +348,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         </div>
       )}
 
+      {/* Main Action Button */}
       {isHost && (
         <div className="mt-6 text-center">
           <Button
@@ -357,18 +371,19 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
             ) : spaceStatus ? (
               <>
                 <Play className="h-4 w-4" />
-                Start now
+                Start Now
               </>
             ) : (
               <>
                 <CircleX className="h-4 w-4" />
-                End space
+                End Space
               </>
             )}
           </Button>
         </div>
       )}
 
+      {/* Join Button for Non-Hosts */}
       {!isHost && isLiveStatus && !isConnected && (
         <div className="mt-6 text-center">
           <Button
@@ -382,6 +397,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         </div>
       )}
 
+      {/* Debug Info (only in development) */}
       {import.meta.env.DEV && (
         <details className="mt-4 text-xs">
           <summary className="cursor-pointer text-gray-500">Debug Info</summary>

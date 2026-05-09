@@ -66,7 +66,7 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
       className={cn(
         'group relative flex flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/40',
         isSpace
-          ? 'border-blue-100 bg-blue-50 ring-4 ring-blue-50/30 hover:bg-blue-100'
+          ? 'border-blue-100 ring-4 ring-blue-50/30'
           : 'border-slate-200 hover:border-slate-300',
         className,
       )}
@@ -116,12 +116,7 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
         </div>
       )}
 
-      <div
-        className={cn(
-          'flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-3 text-slate-500',
-          isSpace && 'hover:bg-blue-100',
-        )}
-      >
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-3 text-slate-500">
         <button
           type="button"
           onClick={handleLike}
