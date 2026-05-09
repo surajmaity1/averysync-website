@@ -1,3 +1,4 @@
+import { POST_TYPE_ENUM } from '@/api/posts/posts.enum'
 import { Post } from '@/api/posts/posts.types'
 import { TUser } from '@/api/users/users.type'
 import { formatPostDate } from '@/libs/utils'
@@ -17,6 +18,10 @@ export const PostHeader = ({ post, user }: { post: Post; user: TUser }) => {
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-gray-900">
             {user.name || 'Unknown User'}
+          </span>
+
+          <span className="rounded-full bg-blue-300 p-1 text-xs font-semibold text-white">
+            {post.type === POST_TYPE_ENUM.SPACE ? 'Host' : 'Author'}
           </span>
 
           <span className="text-xs text-gray-500">
