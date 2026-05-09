@@ -82,6 +82,7 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
     e.stopPropagation()
 
     if (post.status === PostStatus.ended) {
+      // TODO: view details dialog
       setOpenStartSpaceDialog(false)
       toast.success('View details coming soon')
       return
@@ -95,9 +96,7 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
     }
 
     if (post.status === PostStatus.live) {
-      if (!openStartSpaceDialog) {
-        setOpenStartSpaceDialog(true)
-      }
+      setOpenStartSpaceDialog(true)
       return
     }
 

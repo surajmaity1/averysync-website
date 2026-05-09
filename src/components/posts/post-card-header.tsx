@@ -18,9 +18,7 @@ export const PostHeader = ({ post, user }: { post: Post; user: TUser }) => {
           <span className="text-sm font-semibold text-gray-900">
             {user.name || 'Unknown User'}
           </span>
-          <span className="rounded-full bg-blue-300 p-1 text-xs font-semibold text-white">
-            Host
-          </span>
+
           <span className="text-xs text-gray-500">
             {formatPostDate(post?.createdAt)}
           </span>
