@@ -6,7 +6,7 @@ import { cn } from '@/libs/utils'
 import { SpaceStatus } from '@/types/post'
 import { useSpaceStreaming } from '@/utils/stream'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CircleX, Mic, MicOff, Play, Users, XIcon } from 'lucide-react'
+import { CircleX, Mic, MicOff, Minus, Play, Users } from 'lucide-react'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -47,12 +47,12 @@ export const SpaceAlertDialog = ({
         </AlertDialogDescription>
         <SpaceDetailView post={post} onClose={() => onOpenChange(false)} />
         <Button
-          className="absolute top-4 right-4 bg-rose-500 text-white hover:bg-rose-600"
+          className="absolute top-4 right-4"
           onClick={() => {
             onOpenChange(false)
           }}
         >
-          <XIcon className="h-4 w-4" />
+          <Minus className="h-4 w-4" />
         </Button>
       </AlertDialogContent>
     </AlertDialog>
@@ -309,65 +309,61 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         </div>
       )}
 
-      {isConnected && (
-        <div className="flex gap-2">
-          <Button
-            onClick={handleToggleMute}
-            className={cn(
-              'flex-1',
-              isMuted
-                ? 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100'
-                : 'border-green-300 bg-green-50 hover:bg-green-100',
-            )}
-          >
-            {isMuted ? (
-              <>
-                <MicOff className="mr-2 h-4 w-4" />
-                Unmute
-              </>
-            ) : (
-              <>
-                <Mic className="mr-2 h-4 w-4" />
-                Mute
-              </>
-            )}
-          </Button>
-        </div>
-      )}
+      <div className="flex justify-center gap-3">
+        {isConnected && (
+          <div className="">
+            <Button
+              onClick={handleToggleMute}
+              className={cn(
+                '',
+                isMuted
+                  ? 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100'
+                  : 'border-green-300 bg-green-50 hover:bg-green-100',
+              )}
+            >
+              {isMuted ? (
+                <MicOff className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        )}
 
-      {isHost && (
-        <div className="mt-6 text-center">
-          <Button
-            onClick={handleStartEndSpace}
-            disabled={
-              startSpaceMutation.isPending || endSpaceMutation.isPending
-            }
-            className={cn(
-              'w-full gap-2 text-white',
-              spaceStatus
-                ? 'bg-blue-500 hover:bg-blue-600'
-                : 'bg-rose-500 hover:bg-rose-600',
-            )}
-          >
-            {startSpaceMutation.isPending || endSpaceMutation.isPending ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                {spaceStatus ? 'Starting...' : 'Ending...'}
-              </>
-            ) : spaceStatus ? (
-              <>
-                <Play className="h-4 w-4" />
-                Start now
-              </>
-            ) : (
-              <>
-                <CircleX className="h-4 w-4" />
-                End space
-              </>
-            )}
-          </Button>
-        </div>
-      )}
+        {isHost && (
+          <div className="text-center">
+            <Button
+              onClick={handleStartEndSpace}
+              disabled={
+                startSpaceMutation.isPending || endSpaceMutation.isPending
+              }
+              className={cn(
+                'gap-2 text-white',
+                spaceStatus
+                  ? 'bg-blue-500 hover:bg-blue-600'
+                  : 'bg-rose-500 hover:bg-rose-600',
+              )}
+            >
+              {startSpaceMutation.isPending || endSpaceMutation.isPending ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  {spaceStatus ? 'Starting...' : 'Ending...'}
+                </>
+              ) : spaceStatus ? (
+                <>
+                  <Play className="h-4 w-4" />
+                  Start now
+                </>
+              ) : (
+                <>
+                  <CircleX className="h-4 w-4" />
+                  End space
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
 
       {!isHost && isLiveStatus && !isConnected && (
         <div className="mt-6 text-center">

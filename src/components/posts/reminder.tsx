@@ -134,28 +134,26 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
               onOpenChange={setOpenStartSpaceDialog}
               post={post}
             >
-              <>
-                {post.status === PostStatus.ended ? (
-                  <>
-                    <BadgeInfo size={18} />
-                    View Details
-                  </>
-                ) : (
-                  <>
-                    {post.status === PostStatus.live ? (
-                      <>
-                        <span className="h-5 w-5 animate-pulse rounded-full bg-rose-500"></span>
-                        <span className="font-bold text-rose-500">LIVE</span>
-                      </>
-                    ) : (
-                      <>
-                        <Podcast size={18} />
-                        <span>Start now</span>
-                      </>
-                    )}
-                  </>
-                )}
-              </>
+              {post.status === PostStatus.ended ? (
+                <>
+                  <BadgeInfo size={18} />
+                  View Details
+                </>
+              ) : (
+                <>
+                  {post.status === PostStatus.live ? (
+                    <>
+                      <span className="h-5 w-5 animate-pulse rounded-full bg-rose-500"></span>
+                      <span className="font-bold text-rose-500">LIVE</span>
+                    </>
+                  ) : (
+                    <>
+                      <Podcast size={18} />
+                      <span>Start now</span>
+                    </>
+                  )}
+                </>
+              )}
             </SpaceAlertDialog>
           ) : post.status === PostStatus.ended ? (
             <>
