@@ -69,7 +69,6 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
   const [isSpaceLive, setIsSpaceLive] = useState(false)
   const [connectionToken, setConnectionToken] = useState<string | null>(null)
   const [websocketUrl, setWebsocketUrl] = useState<string | null>(null)
-  const audioRef = useRef<HTMLDivElement>(null)
   const isLiveRef = useRef(false)
   const joinAttemptedRef = useRef(false)
 
@@ -80,6 +79,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     isConnected,
     isMuted,
     remoteStreams,
+    audioContainerRef,
   } = useSpaceStreaming()
 
   const spaceStatus = post.status === 1
@@ -260,23 +260,9 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     }
   }, [])
 
-  // Play remote audio streams
-  useEffect(() => {
-    if (audioRef.current && remoteStreams.length > 0) {
-      audioRef.current.innerHTML = ''
-      remoteStreams.forEach((stream, index) => {
-        const audio = document.createElement('audio')
-        audio.srcObject = stream
-        audio.autoplay = true
-        audio.id = `remote-audio-${index}`
-        audioRef.current?.appendChild(audio)
-      })
-    }
-  }, [remoteStreams])
-
   return (
     <div className="space-y-4">
-      <div ref={audioRef} className="hidden" />
+      <div ref={audioContainerRef} className="hidden" />
 
       {isConnected && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3">

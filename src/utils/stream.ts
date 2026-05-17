@@ -39,6 +39,8 @@ class SpaceStreamManager {
   private localStream: MediaStream | null = null
   private audioContainer: HTMLDivElement | null = null
 
+  private pendingCandidates: RTCIceCandidateInit[] = []
+
   // Guards a single in-flight offer/answer cycle.
   // After the initial handshake the SERVER drives all renegotiation by
   // sending offers; we never self-initiate again.  This prevents glare.
@@ -175,6 +177,19 @@ class SpaceStreamManager {
     })
   }
 
+  private async drainPendingCandidates(): Promise<void> {
+    const pc = this.pc
+    if (!pc) return
+    const queued = this.pendingCandidates.splice(0) // atomically drain
+    for (const init of queued) {
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(init))
+      } catch (err) {
+        console.warn('[SFU] drainPendingCandidates error', err)
+      }
+    }
+  }
+
   // ── Signaling message dispatch ──────────────────────────────────────────────
 
   private async handleMessage(msg: Signal): Promise<void> {
@@ -188,6 +203,7 @@ class SpaceStreamManager {
           await pc.setRemoteDescription(
             new RTCSessionDescription({ type: 'answer', sdp: msg.sdp! }),
           )
+          await this.drainPendingCandidates()
         }
         break
 
@@ -201,6 +217,7 @@ class SpaceStreamManager {
           await pc.setRemoteDescription(
             new RTCSessionDescription({ type: 'offer', sdp: msg.sdp! }),
           )
+          await this.drainPendingCandidates()
           const answer = await pc.createAnswer()
           await pc.setLocalDescription(answer)
           this.send({ type: 'answer', sdp: answer.sdp! })
@@ -212,7 +229,11 @@ class SpaceStreamManager {
       // ── BUG FIX #1: server sends 'ice_candidate', not 'candidate' ──────────
       case 'ice_candidate':
         if (msg.candidate) {
-          await pc.addIceCandidate(new RTCIceCandidate(msg.candidate))
+          if (pc.remoteDescription) {
+            await pc.addIceCandidate(new RTCIceCandidate(msg.candidate))
+          } else {
+            this.pendingCandidates.push(msg.candidate)
+          }
         }
         break
 
@@ -293,6 +314,7 @@ class SpaceStreamManager {
   }
 
   cleanup(): void {
+    this.pendingCandidates = []
     this.localStream?.getTracks().forEach((t) => t.stop())
     this.localStream = null
 
