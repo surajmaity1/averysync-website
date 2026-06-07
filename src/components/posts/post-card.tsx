@@ -8,9 +8,9 @@ import { MessageCircle, PlusCircle, Share2, ThumbsUp } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { MiniSpaceStatusView } from '../spaces/mini-space-status'
-import { CreatedUpdatePostDialog } from './create-update-post-dialog'
+import { PostDialog } from './create-update-post-dialog'
 import { PostHeader } from './post-card-header'
-import { PostOptionsMenu } from './post-option-menu'
+import { PostCardOptionsButton } from './post-card-options'
 import { ReminderCard } from './reminder'
 
 type CardProps = {
@@ -46,19 +46,6 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
     toast.success('Link copied to clipboard')
   }
 
-  const handleMenuEdit = () => {
-    toast.success('edit feature coming soon!')
-  }
-
-  const handleMenuDelete = () => {
-    toast.error('Deleted feature coming soon!')
-  }
-
-  const handleMenuShare = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/feed/${post.id}`)
-    toast.success('Link copied to clipboard')
-  }
-
   const isSpace = post.type === 'SPACE'
 
   return (
@@ -87,11 +74,9 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
             </>
           )}
         </div>
-        <PostOptionsMenu
-          onEdit={handleMenuEdit}
-          onDelete={handleMenuDelete}
-          onShare={handleMenuShare}
-          manage={post.createdBy === currentLoggedInUser?.id}
+        <PostCardOptionsButton
+          post={post}
+          postOwner={post.createdBy === currentLoggedInUser?.id}
         />
       </div>
 
@@ -203,7 +188,7 @@ export const EmptyCard = ({ className = '', defaultData }: EmptyCardProps) => {
             new!
           </p>
 
-          <CreatedUpdatePostDialog
+          <PostDialog
             open={showCreatePostForm}
             isMutationPending={createPostMutation.isPending}
             onSubmit={(data) => {
@@ -224,7 +209,7 @@ export const EmptyCard = ({ className = '', defaultData }: EmptyCardProps) => {
             >
               Create Post
             </Button>
-          </CreatedUpdatePostDialog>
+          </PostDialog>
         </div>
       </article>
     </div>

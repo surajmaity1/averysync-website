@@ -6,7 +6,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog'
-import { CreateUpdatePostForm, TPostFormData } from './create-update-post-form'
+import { PostForm, TPostFormData } from './create-update-post-form'
 
 type BaseProps = {
   open: boolean
@@ -22,13 +22,20 @@ type CreateModeProps = BaseProps & {
 }
 
 type UpdateModeProps = BaseProps & {
-  mode: 'create'
+  mode: 'update'
   defaultData?: Partial<TPostFormData>
 }
 
-type CreateUpdatePostDialogProps = CreateModeProps | UpdateModeProps
+type PostDialogProps = CreateModeProps | UpdateModeProps
 
-export const CreatedUpdatePostDialog = ({
+type DialogMode = PostDialogProps['mode']
+
+const POST_DIALOG_TITLE_MODE: Record<DialogMode, string> = {
+  create: 'Create Post / Space',
+  update: 'Update Post / Space',
+}
+
+export const PostDialog = ({
   open,
   children,
   isMutationPending,
@@ -36,16 +43,14 @@ export const CreatedUpdatePostDialog = ({
   onOpenChange,
   mode,
   defaultData,
-}: CreateUpdatePostDialogProps) => {
+}: PostDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent className="bg-gray-50">
-        <AlertDialogTitle>
-          {mode === 'create' ? 'Create Post / Space' : 'Update Post / Space'}
-        </AlertDialogTitle>
+        <AlertDialogTitle>{POST_DIALOG_TITLE_MODE[mode]}</AlertDialogTitle>
         <AlertDialogDescription></AlertDialogDescription>
-        <CreateUpdatePostForm
+        <PostForm
           isSubmitting={isMutationPending}
           mode={mode}
           initialData={defaultData}

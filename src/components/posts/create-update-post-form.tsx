@@ -27,7 +27,7 @@ const postFormSchema = z.object({
 
 export type TPostFormData = z.infer<typeof postFormSchema>
 
-type CreateUpdatePostFormProps = {
+type PostFormProps = {
   isSubmitting?: boolean
   mode?: 'create' | 'update'
   initialData?: Partial<TPostFormData>
@@ -77,13 +77,13 @@ const SubmitFormButton = ({
   )
 }
 
-export const CreateUpdatePostForm = ({
+export const PostForm = ({
   isSubmitting,
   mode,
   initialData,
   onCancel,
   onSubmit,
-}: CreateUpdatePostFormProps) => {
+}: PostFormProps) => {
   const {
     register,
     control,
