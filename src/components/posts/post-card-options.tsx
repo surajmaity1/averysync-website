@@ -1,16 +1,17 @@
 import { PostsApi } from '@/api/posts/posts.api'
 import { Post } from '@/api/posts/posts.types'
+import { Button } from '@/components/ui/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@radix-ui/react-dropdown-menu'
+  DropDownMenu,
+  DropDownMenuContent,
+  DropDownMenuItem,
+  DropDownMenuPortal,
+  DropDownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { LinkIcon, MoreVerticalIcon, Trash2 } from 'lucide-react'
+import { MoreVerticalIcon, Share, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '../ui/button'
-import { DropDownMenuTrigger } from '../ui/dropdown-menu'
 import { UpdatePostButton } from './update-post-button'
 
 type DeletePostButtonProps = {
@@ -40,30 +41,47 @@ const DeletePostButton = ({ postId }: DeletePostButtonProps) => {
 
   return (
     <Button
+      className="bg-rose-300 hover:bg-rose-400"
       onClick={() => {
         deletePostMutation.mutate({
           postId: postId,
         })
       }}
     >
-      <Trash2 /> Delete
+      <Trash2 />
     </Button>
   )
 }
 
 type SharePostButtonProps = {
   postId: string
+  postTitle: string
+  postDescription?: string
 }
 
-const SharePostButton = ({ postId }: SharePostButtonProps) => {
+const SharePostButton = ({
+  postId,
+  postTitle,
+  postDescription,
+}: SharePostButtonProps) => {
   const handleMenuShare = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/feed/${postId}`)
+    const sharePost: ShareData = {
+      title: postTitle,
+      text: postDescription,
+      url: `${window.location.origin}/feed/${postId}`,
+    }
+
+    navigator.share(sharePost)
+    navigator.clipboard.writeText(sharePost.url!)
     toast.success('Link copied to clipboard')
   }
 
   return (
-    <Button onClick={handleMenuShare}>
-      <LinkIcon /> Share
+    <Button
+      onClick={handleMenuShare}
+      className="bg-green-300 hover:bg-green-400"
+    >
+      <Share />
     </Button>
   )
 }
@@ -78,25 +96,33 @@ export const PostCardOptionsButton = ({
   postOwner,
 }: PostCardOptionsProps) => {
   return (
-    <DropdownMenu>
+    <DropDownMenu>
       <DropDownMenuTrigger>
-        <MoreVerticalIcon size={20} />
+        <button>
+          <MoreVerticalIcon size={20} />
+        </button>
       </DropDownMenuTrigger>
-      <DropdownMenuContent>
-        {postOwner && (
-          <>
-            <DropdownMenuItem>
-              <UpdatePostButton post={post} />
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <DeletePostButton postId={post.id} />
-            </DropdownMenuItem>
-          </>
-        )}
-        <DropdownMenuItem>
-          <SharePostButton postId={post.id} />
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      <DropDownMenuPortal>
+        <DropDownMenuContent>
+          {postOwner && (
+            <>
+              <DropDownMenuItem>
+                <UpdatePostButton post={post} />
+              </DropDownMenuItem>
+              <DropDownMenuItem>
+                <DeletePostButton postId={post.id} />
+              </DropDownMenuItem>
+            </>
+          )}
+          <DropDownMenuItem>
+            <SharePostButton
+              postId={post.id}
+              postTitle={post.title}
+              postDescription={post.description}
+            />
+          </DropDownMenuItem>
+        </DropDownMenuContent>
+      </DropDownMenuPortal>
+    </DropDownMenu>
   )
 }

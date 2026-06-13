@@ -51,9 +51,9 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/40',
+        'group relative flex flex-col overflow-hidden rounded-3xl border transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/40',
         isSpace
-          ? 'border-blue-100 bg-blue-50 ring-4 ring-blue-50/30 hover:bg-blue-100'
+          ? 'border-blue-100 bg-blue-50 ring-4 ring-blue-50/30'
           : 'border-slate-200 hover:border-slate-300',
         className,
       )}
@@ -66,7 +66,6 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
           ) : (
             <>
               <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
-
               <div className="flex flex-col gap-2">
                 <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
                 <div className="h-3 w-16 animate-pulse rounded bg-gray-200" />
@@ -96,7 +95,7 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
       </div>
 
       {isSpace && (
-        <div className="mt-2 mb-6 flex justify-center px-6">
+        <div className="mt-2 mb-6 flex cursor-pointer justify-center px-6">
           <ReminderCard post={post} />
         </div>
       )}
@@ -104,17 +103,16 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
       <div
         className={cn(
           'flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-3 text-slate-500',
-          isSpace && 'hover:bg-blue-100',
         )}
       >
         <button
           type="button"
           onClick={handleLike}
-          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all hover:bg-white hover:text-blue-600 hover:shadow-sm"
+          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all"
         >
           <ThumbsUp
             size={18}
-            className="transition-transform duration-300 group-hover:-rotate-12 group-active:scale-90"
+            className="transition-transform duration-300 group-active:scale-90"
           />
           <span>Like</span>
         </button>
@@ -122,11 +120,11 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
         <button
           type="button"
           onClick={handleComment}
-          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all hover:bg-white hover:text-blue-600 hover:shadow-sm"
+          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all"
         >
           <MessageCircle
             size={18}
-            className="transition-transform duration-300 group-hover:scale-110 group-active:scale-90"
+            className="transition-transform duration-300 group-active:scale-90"
           />
           <span>Comment</span>
         </button>
@@ -134,11 +132,11 @@ export const Card = ({ className = '', post, onClick }: CardProps) => {
         <button
           type="button"
           onClick={handleFooterShare}
-          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all hover:bg-white hover:text-blue-600 hover:shadow-sm"
+          className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all"
         >
           <Share2
             size={18}
-            className="transition-transform duration-300 group-hover:rotate-12 group-active:scale-90"
+            className="transition-transform duration-300 group-active:scale-90"
           />
           <span>Share</span>
         </button>

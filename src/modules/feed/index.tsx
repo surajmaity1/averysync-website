@@ -67,7 +67,7 @@ export const Feed = () => {
             <Card
               key={post?.id}
               post={post}
-              className=""
+              className="cursor-pointer"
               onClick={() =>
                 navigate({
                   to: '/feed/$postId',

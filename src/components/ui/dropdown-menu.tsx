@@ -1,3 +1,4 @@
+import { cn } from '@/libs/utils'
 import * as DropDownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import * as React from 'react'
 
@@ -37,6 +38,7 @@ export function DropDownMenuContent({
   return (
     <DropDownMenuPrimitive.Content
       data-slot="cusomize-dropdown-menu-content"
+      className="rounded-lg bg-gray-50 shadow-sm"
       {...props}
     />
   )
@@ -48,6 +50,7 @@ export function DropDownMenuItem({
   return (
     <DropDownMenuPrimitive.Item
       data-slot="cusomize-dropdown-menu-item"
+      className={cn("px-1 py-1 [&_svg:not([class*='size-'])]:size-3")}
       {...props}
     />
   )
