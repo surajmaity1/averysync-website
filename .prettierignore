@@ -8,3 +8,4 @@ postcss.config.mjs
 prettier.config.ts
 vercel.json
 vite.config.ts
+wrangler.jsonc

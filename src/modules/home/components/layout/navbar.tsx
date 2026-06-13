@@ -39,7 +39,6 @@ export const Navbar: React.FC = () => {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-        
           <div className="group flex cursor-pointer items-center gap-2.5">
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg ring-1 shadow-slate-200/20 ring-slate-900/5 transition-all duration-300 group-hover:scale-105 group-hover:rotate-3 group-hover:shadow-slate-200/30">
               <img

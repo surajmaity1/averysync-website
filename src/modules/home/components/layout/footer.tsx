@@ -12,7 +12,6 @@ export const Footer: React.FC = () => {
     <footer className="bg-slate-950 pt-24 pb-12 text-slate-400">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
-  
           <div className="lg:col-span-4">
             <div
               onClick={scrollToTop}
