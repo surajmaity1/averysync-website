@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '../ui/button'
-import { CreatedUpdatePostDialog } from './create-update-post-dialog'
+import { PostDialog } from './create-update-post-dialog'
 import { TPostFormData } from './create-update-post-form'
 
 type CreatePostButtonProps = {
@@ -26,7 +26,7 @@ export const CreatePostButton = ({ defaultData }: CreatePostButtonProps) => {
   })
 
   return (
-    <CreatedUpdatePostDialog
+    <PostDialog
       open={showCreatePostForm}
       isMutationPending={createPostMutation.isPending}
       onSubmit={(data) => {
@@ -44,6 +44,6 @@ export const CreatePostButton = ({ defaultData }: CreatePostButtonProps) => {
       <Button className="fixed right-6 bottom-12 flex h-14 w-14 transform items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg transition hover:scale-110 hover:bg-blue-700">
         +
       </Button>
-    </CreatedUpdatePostDialog>
+    </PostDialog>
   )
 }

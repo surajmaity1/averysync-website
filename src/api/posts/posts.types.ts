@@ -26,6 +26,12 @@ export type TPost = {
   type?: POST_TYPE_ENUM
   is_recorded?: boolean
   created_by: TPostCreatedBy
+  scheduled_started_at?: string
+  scheduled_ended_at?: string
+  started_at?: string
+  ended_at?: string
+  created_in_timezone?: string
+  status?: string
 }
 
 export type CreatePostRequestDTO = {
@@ -45,6 +51,10 @@ export type GetPostsDTO = {
 }
 
 export type GetPostByIdRequestDTO = {
+  postId: string
+}
+
+export type DeletePostByIdRequestDTO = {
   postId: string
 }
 

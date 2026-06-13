@@ -150,7 +150,7 @@ export const ReminderCard = ({ className = '', post }: ReminderProps) => {
                     ) : (
                       <>
                         <Podcast size={18} />
-                        <span>Start now</span>
+                        <span className="cursor-pointer">Start now</span>
                       </>
                     )}
                   </>

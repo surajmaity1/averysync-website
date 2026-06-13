@@ -3,6 +3,7 @@ import { TApiResponse } from '../common/common.type'
 import {
   CreatePostRequestDTO,
   CreateUpdateSpaceReminderRequestDTO,
+  DeletePostByIdRequestDTO,
   GetPostByIdRequestDTO,
   GetPostsDTO,
   GetSpaceReminderByIdRequestDTO,
@@ -73,6 +74,15 @@ export const PostsApi = {
         updatePostRequestDTO,
       )
       return data
+    },
+  },
+  deletePostById: {
+    key: ({ postId }: DeletePostByIdRequestDTO) => [
+      'postApi.deletePostById',
+      postId,
+    ],
+    fn: async ({ postId }: DeletePostByIdRequestDTO): Promise<void> => {
+      await axiosAPIClient.delete(`/v1/posts/${postId}`)
     },
   },
 }
