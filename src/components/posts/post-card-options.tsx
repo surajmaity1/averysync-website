@@ -8,6 +8,7 @@ import {
   DropDownMenuPortal,
   DropDownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { cn } from '@/libs/utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { MoreVerticalIcon, Share, Trash2 } from 'lucide-react'
@@ -42,7 +43,9 @@ const DeletePostButton = ({ postId }: DeletePostButtonProps) => {
   return (
     <Button
       className="bg-rose-300 hover:bg-rose-400"
-      onClick={() => {
+      disabled={deletePostMutation.isPending}
+      onClick={(e) => {
+        e.stopPropagation()
         deletePostMutation.mutate({
           postId: postId,
         })
@@ -72,13 +75,14 @@ const SharePostButton = ({
     }
 
     navigator.share(sharePost)
-    navigator.clipboard.writeText(sharePost.url!)
-    toast.success('Link copied to clipboard')
   }
 
   return (
     <Button
-      onClick={handleMenuShare}
+      onClick={(e) => {
+        e.stopPropagation()
+        handleMenuShare()
+      }}
       className="bg-green-300 hover:bg-green-400"
     >
       <Share />
@@ -98,9 +102,15 @@ export const PostCardOptionsButton = ({
   return (
     <DropDownMenu>
       <DropDownMenuTrigger>
-        <button>
+        <Button
+          className={cn(
+            post.type === 'POST'
+              ? 'bg-gray-50 hover:bg-gray-100'
+              : 'bg-blue-50 hover:bg-blue-100',
+          )}
+        >
           <MoreVerticalIcon size={20} />
-        </button>
+        </Button>
       </DropDownMenuTrigger>
       <DropDownMenuPortal>
         <DropDownMenuContent>
