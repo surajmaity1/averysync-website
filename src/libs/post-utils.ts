@@ -7,6 +7,7 @@ export const getDefaultPostFormData = (post: Post): Partial<TPostFormData> => {
     title: post.title,
     description: post.description,
     isRecorded: post.isRecorded,
+    type: post.type,
   }
 }
 

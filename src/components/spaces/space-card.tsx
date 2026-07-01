@@ -76,7 +76,9 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     startSpace,
     stopSpace,
     toggleMute,
+    status,
     isConnected,
+    isReconnecting,
     isMuted,
     remoteStreams,
     audioContainerRef,
@@ -98,12 +100,13 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     enabled: !isHost && isLiveStatus,
   })
 
-  // Auto-join for listeners
+  // Auto-join for listeners. Gate on status === 'idle' so the manager's own
+  // reconnect loop isn't interrupted by a duplicate startSpace() call.
   useEffect(() => {
     if (
       !isHost &&
       isLiveStatus &&
-      !isConnected &&
+      status === 'idle' &&
       data &&
       !joinAttemptedRef.current
     ) {
@@ -118,7 +121,14 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         setIsSpaceLive(true)
       }
     }
-  }, [isHost, isLiveStatus, isConnected, data, startSpace])
+  }, [isHost, isLiveStatus, status, data, startSpace])
+
+  // If the manager exhausts its retries, allow another join attempt.
+  useEffect(() => {
+    if (status === 'failed' || status === 'idle') {
+      joinAttemptedRef.current = false
+    }
+  }, [status])
 
   // Start/Update space mutation
   const startSpaceMutation = useMutation({
@@ -249,8 +259,8 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
 
   // Cleanup on unmount
   useEffect(() => {
-    isLiveRef.current = isSpaceLive || isConnected
-  }, [isSpaceLive, isConnected])
+    isLiveRef.current = isSpaceLive || isConnected || isReconnecting
+  }, [isSpaceLive, isConnected, isReconnecting])
 
   useEffect(() => {
     return () => {
@@ -284,16 +294,47 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         </div>
       )}
 
-      {isLiveStatus && !isConnected && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+      {isReconnecting && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-            <span className="text-sm font-medium text-red-800">
-              Space is Live
+            <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+            <span className="text-sm font-medium text-amber-800">
+              Reconnecting to space…
             </span>
           </div>
+          <p className="mt-1 text-xs text-amber-700">
+            Hold on, we&apos;ll have you back in a moment.
+          </p>
         </div>
       )}
+
+      {status === 'failed' && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-red-500" />
+            <span className="text-sm font-medium text-red-800">
+              Disconnected from space
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-red-700">
+            We couldn&apos;t reconnect automatically. Tap Rejoin to try again.
+          </p>
+        </div>
+      )}
+
+      {isLiveStatus &&
+        !isConnected &&
+        !isReconnecting &&
+        status !== 'failed' && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+              <span className="text-sm font-medium text-red-800">
+                Space is Live
+              </span>
+            </div>
+          </div>
+        )}
 
       {isConnected && (
         <div className="flex gap-2">
@@ -355,7 +396,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         </div>
       )}
 
-      {!isHost && isLiveStatus && !isConnected && (
+      {!isHost && isLiveStatus && !isConnected && !isReconnecting && (
         <div className="mt-6 text-center">
           <Button
             onClick={handleJoinSpace}
@@ -363,7 +404,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
             className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
           >
             <Play className="h-4 w-4" />
-            Join Space
+            {status === 'failed' ? 'Rejoin Space' : 'Join Space'}
           </Button>
         </div>
       )}
@@ -374,7 +415,9 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
           <div className="mt-2 space-y-1 rounded bg-gray-100 p-3">
             <p>Space ID: {post.id}</p>
             <p>Status: {post.status}</p>
+            <p>Status: {status}</p>
             <p>Is Connected: {isConnected ? 'Yes' : 'No'}</p>
+            <p>Is Reconnecting: {isReconnecting ? 'Yes' : 'No'}</p>
             <p>Is Live: {isSpaceLive ? 'Yes' : 'No'}</p>
             <p>Token: {connectionToken ? 'Present' : 'None'}</p>
             <p>WebSocket URL: {websocketUrl || 'None'}</p>

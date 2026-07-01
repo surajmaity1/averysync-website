@@ -2,8 +2,10 @@ import { PostsApi } from '@/api/posts/posts.api'
 import { Post } from '@/api/posts/posts.types'
 import { getDefaultPostFormData, getUpdatePostDetails } from '@/libs/post-utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Edit2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Button } from '../ui/button'
 import { PostDialog } from './create-update-post-dialog'
 import { TPostFormData } from './create-update-post-form'
 
@@ -50,7 +52,14 @@ export const UpdatePostButton = ({ post }: UpdatePostButtonProps) => {
       isMutationPending={updatePostMutation.isPending}
       onSubmit={(data) => handleSubmit(data)}
     >
-      Edit
+      <Button
+        className="bg-blue-300 hover:bg-blue-400"
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+      >
+        <Edit2 />
+      </Button>
     </PostDialog>
   )
 }
