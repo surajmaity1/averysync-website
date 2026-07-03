@@ -1,129 +1,82 @@
-import { ArrowRight, Github, Linkedin, Twitter, Youtube } from 'lucide-react'
+import { Github, Linkedin, Twitter, Youtube } from 'lucide-react'
 import React from 'react'
+import { FOOTER_LINKS } from '../data/data'
+import { BrandMark } from '../ui/brand-mark'
+import { Eyebrow } from '../ui/eyebrow'
+import { PingDot } from '../ui/ping-dot'
+
+const SOCIAL_LINKS = [
+  { label: 'Twitter', icon: Twitter },
+  { label: 'GitHub', icon: Github },
+  { label: 'LinkedIn', icon: Linkedin },
+  { label: 'YouTube', icon: Youtube },
+]
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
   return (
-    <footer className="bg-slate-950 pt-24 pb-12 text-slate-400">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-4">
-            <div
-              onClick={scrollToTop}
-              className="group mb-6 flex cursor-pointer items-center gap-2.5 text-white"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg shadow-white/5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
-                <img
-                  src="/favicon.ico"
-                  alt="Averysync Logo"
-                  className="h-6 w-6"
-                />
-              </div>
-              <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-blue-400">
+    <footer className="border-t border-slate-200 bg-white pt-20 pb-10">
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-4 lg:grid-cols-12">
+          <div className="col-span-2 lg:col-span-5">
+            <a href="#top" className="flex items-center gap-2.5">
+              <BrandMark />
+              <span className="tracking-tightest text-lg font-bold text-slate-900">
                 Averysync
               </span>
-            </div>
-            <p className="mb-8 text-base leading-relaxed text-slate-400">
-              The real-time voice platform for engineering teams. Debug faster,
-              design better, and build culture without the burnout.
+            </a>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-500">
+              Real-time audio for engineering teams. Debug faster, design
+              better, and build culture without the burnout.
             </p>
-            <div className="flex items-center gap-2 text-sm font-medium text-emerald-400">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-              </span>
+            <div className="mt-6 flex items-center gap-2 text-sm font-medium text-emerald-600">
+              <PingDot color="emerald" className="h-2.5 w-2.5" />
               All systems operational
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:pl-12">
-            <div>
-              <h3 className="mb-4 text-sm font-semibold tracking-wider text-white uppercase">
-                Product
-              </h3>
-              <ul className="space-y-3 text-sm">
-                {[
-                  'Features',
-                  'Integrations',
-                  'Enterprise',
-                  'Changelog',
-                  'Docs',
-                ].map((item) => (
-                  <li key={item}>
+          {FOOTER_LINKS.map((group, i) => (
+            <div
+              key={group.heading}
+              className={
+                i === 0 ? 'lg:col-span-2 lg:col-start-8' : 'lg:col-span-2'
+              }
+            >
+              <Eyebrow className="block text-slate-400">
+                {group.heading}
+              </Eyebrow>
+              <ul className="mt-4 space-y-3 text-sm text-slate-500">
+                {group.links.map((link) => (
+                  <li key={link.label}>
                     <a
-                      href="#"
-                      className="transition-colors hover:text-blue-400"
+                      href={link.href}
+                      className="transition-colors hover:text-blue-600"
                     >
-                      {item}
+                      {link.label}
                     </a>
                   </li>
                 ))}
               </ul>
             </div>
-            <div>
-              <h3 className="mb-4 text-sm font-semibold tracking-wider text-white uppercase">
-                Company
-              </h3>
-              <ul className="space-y-3 text-sm">
-                {['About', 'Careers', 'Blog', 'Contact', 'Partners'].map(
-                  (item) => (
-                    <li key={item}>
-                      <a
-                        href="#"
-                        className="transition-colors hover:text-blue-400"
-                      >
-                        {item}
-                      </a>
-                    </li>
-                  ),
-                )}
-              </ul>
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <h3 className="mb-4 text-sm font-semibold tracking-wider text-white uppercase">
-                Stay up to date
-              </h3>
-              <p className="mb-4 text-sm text-slate-400">
-                Subscribe to our newsletter for the latest engineering updates.
-              </p>
-              <form className="flex flex-col gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email | Feature coming soon"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-500"
-                >
-                  Subscribe <ArrowRight className="h-4 w-4" />
-                </button>
-              </form>
-            </div>
-          </div>
+          ))}
         </div>
 
-        <div className="mt-16 border-t border-slate-800 pt-8">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <p className="text-sm text-slate-500">
-              &copy; {currentYear} Averysync Inc. All rights reserved.
-            </p>
-            <div className="flex gap-6">
-              {[Twitter, Github, Linkedin, Youtube].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="text-slate-500 transition-colors hover:text-white"
-                >
-                  <Icon className="h-5 w-5" />
-                </a>
-              ))}
-            </div>
+        <div className="mt-16 flex flex-col items-center justify-between gap-6 border-t border-slate-100 pt-8 md:flex-row">
+          <p className="text-sm text-slate-400">
+            © {currentYear} Averysync Inc. All rights reserved.
+          </p>
+          <div className="flex gap-5 text-slate-400">
+            {SOCIAL_LINKS.map(({ label, icon: Icon }) => (
+              <a
+                key={label}
+                href="#"
+                className="transition-colors hover:text-slate-900"
+                aria-label={label}
+              >
+                <Icon className="h-5 w-5" />
+              </a>
+            ))}
           </div>
         </div>
       </div>

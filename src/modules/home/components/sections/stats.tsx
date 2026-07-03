@@ -1,38 +1,41 @@
-import { Clock, Radio, Users } from 'lucide-react'
 import React from 'react'
 import { STATS } from '../data/data'
+import { CountUp } from '../ui/count-up'
+import { Eyebrow } from '../ui/eyebrow'
+import { PingDot } from '../ui/ping-dot'
+import { Reveal } from '../ui/reveal'
 
 export const Stats: React.FC = () => {
-  const icons = [Radio, Users, Clock]
-
   return (
-    <section className="relative z-20 -mt-24 pb-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-2xl shadow-slate-200/50 sm:p-12">
-          <div className="grid grid-cols-1 gap-12 divide-y divide-slate-100 md:grid-cols-3 md:gap-0 md:divide-x md:divide-y-0">
-            {STATS.map((stat, i) => {
-              const Icon = icons[i] || Users
-              return (
-                <div
-                  key={stat.label}
-                  className="group flex flex-col items-center justify-center px-6 transition-all md:flex-row md:justify-start"
-                >
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-500/30 md:mr-6 md:mb-0">
-                    <Icon className="h-8 w-8" strokeWidth={1.5} />
-                  </div>
-                  <div className="text-center md:text-left">
-                    <p className="text-4xl font-bold tracking-tight text-slate-900">
-                      {stat.value}
-                      <span className="text-blue-600">+</span>
-                    </p>
-                    <p className="mt-1 text-sm font-semibold tracking-wide text-slate-500">
-                      {stat.label}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+    <section className="border-y border-slate-200/70 bg-white">
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 divide-slate-100 py-12 md:grid-cols-4 md:divide-x">
+          {STATS.map((stat, i) => (
+            <Reveal
+              key={stat.label}
+              delay={i * 0.08}
+              className="px-4 py-3 text-center md:text-left"
+            >
+              <p
+                className={
+                  stat.live
+                    ? 'tracking-tightest flex items-center justify-center gap-2.5 text-4xl font-bold text-slate-900 sm:text-5xl md:justify-start'
+                    : 'tracking-tightest text-4xl font-bold text-slate-900 sm:text-5xl'
+                }
+              >
+                {stat.live && (
+                  <PingDot color="emerald" className="h-2.5 w-2.5" />
+                )}
+                <CountUp value={stat.value} decimals={stat.decimals} />
+                {stat.suffix && (
+                  <span className="text-blue-600">{stat.suffix}</span>
+                )}
+              </p>
+              <Eyebrow className="mt-1.5 block text-slate-400">
+                {stat.label}
+              </Eyebrow>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
