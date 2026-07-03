@@ -1,197 +1,243 @@
-import { applicationConfig } from '@/config/app-config'
-import { useAuth } from '@/hooks/useAuth'
-import { Link } from '@tanstack/react-router'
-import { ArrowRight, Radio, Users } from 'lucide-react'
+import { GoogleIcon } from '@/components/icons/signin-button-icons'
+import {
+  ArrowRight,
+  Hand,
+  Headphones,
+  Heart,
+  MoreHorizontal,
+  Radio,
+} from 'lucide-react'
 import React from 'react'
+import { useHomeCta } from '../../hooks/use-home-cta'
+import { AVATAR_COLORS, HERO_AVATARS } from '../data/data'
+import { Eyebrow } from '../ui/eyebrow'
+import { InitialsAvatar } from '../ui/initials-avatar'
+import { LiveCount } from '../ui/live-count'
+import { PingDot } from '../ui/ping-dot'
+import { Reveal } from '../ui/reveal'
+import { Waveform } from '../ui/waveform'
 
 export const Hero: React.FC = () => {
-  const { isLoggedIn, isLoading } = useAuth()
-
-  const handleSignIn = () => {
-    if (isLoggedIn) return
-    window.location.href = `${applicationConfig.backendApplicationURL}/v1/auth/google/login`
-  }
+  const { isLoggedIn, startSpace } = useHomeCta()
 
   return (
-    <section className="relative overflow-hidden bg-slate-50 pt-16 pb-32 lg:pt-32">
-      <div
-        className="absolute inset-0 z-0 opacity-30"
-        style={{
-          backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
-        }}
-      ></div>
+    <section className="relative overflow-hidden pt-36 pb-24 lg:pt-44 lg:pb-40">
+      {/* Subtle top light + editorial guides */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px] bg-gradient-to-b from-white to-slate-50" />
+      <div className="grid-guides pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto h-[520px] max-w-[1200px] opacity-60" />
 
-      <div className="absolute -top-24 -right-24 -z-10 h-[500px] w-[500px] rounded-full bg-blue-400/20 blur-3xl filter" />
-      <div className="absolute top-1/2 -left-24 -z-10 h-[400px] w-[400px] rounded-full bg-indigo-400/20 blur-3xl filter" />
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-14 px-5 sm:px-6 lg:grid-cols-[1.02fr_.98fr] lg:gap-10 lg:px-8">
+        {/* Left */}
+        <div>
+          <Reveal className="flex items-center gap-2.5">
+            <Eyebrow className="text-blue-600">
+              Live audio for engineers
+            </Eyebrow>
+            <span className="h-px w-8 bg-slate-300" />
+          </Reveal>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-8">
-          <div className="flex flex-col justify-center">
-            <div className="mx-auto mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-blue-50/50 px-3 py-1 text-xs font-semibold text-blue-600 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
-              </span>
-              LIVE: 2 active spaces right now
-            </div>
-
-            <h1 className="mb-6 text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-              Connect in real-time{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                with global tech minds
-              </span>
+          <Reveal delay={0.05}>
+            <h1 className="tracking-tightest mt-5 text-[2.9rem] leading-[1.02] font-bold text-slate-900 sm:text-6xl lg:text-[4.1rem]">
+              Where engineers
+              <br className="hidden sm:block" /> talk shop,{' '}
+              <span className="text-blue-600">live</span>.
             </h1>
+          </Reveal>
 
-            <p className="mb-8 max-w-lg text-lg leading-relaxed text-slate-600">
-              Experience real-time professional networking on{' '}
-              <strong>Averysync</strong> via live spaces. Make{' '}
-              <strong>Averysync</strong> your daily stage for career growth.
+          <Reveal delay={0.12}>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600">
+              Averysync is real-time audio for developers. Drop into a Space,
+              jump into the conversation, and build your reputation one room at
+              a time — no scheduling, no slide decks, just signal.
             </p>
+          </Reveal>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              {isLoggedIn ? (
-                <>
-                  <Link
-                    to="/feed"
-                    className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700"
-                  >
-                    Start a Space
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                  <Link
-                    to="/feed"
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-base font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    Explore Live Spaces
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <div
-                    onClick={() => {
-                      handleSignIn()
-                    }}
-                    className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-200 transition-all hover:scale-[1.02] hover:bg-blue-700"
-                  >
-                    Start a Space
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </div>
-                  <div
-                    onClick={() => {
-                      handleSignIn()
-                    }}
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-base font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    Explore Live Spaces
-                  </div>
-                </>
+          <Reveal delay={0.18} className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={startSpace}
+              className="group shadow-soft inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-700"
+            >
+              {!isLoggedIn && (
+                <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white">
+                  <GoogleIcon />
+                </span>
               )}
-            </div>
+              Start a Space
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </button>
+            <a
+              href="#spaces"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+            >
+              <Radio className="h-4 w-4 text-blue-600" />
+              Explore live rooms
+            </a>
+          </Reveal>
 
-            <div className="mt-10 flex items-center gap-4 text-sm text-slate-500">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-10 w-10 rounded-full border-2 border-white bg-slate-200"
-                    style={{
-                      backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=${i})`,
-                    }}
-                  />
-                ))}
-              </div>
-              <p>Joined by 10,000+ techies</p>
+          <Reveal delay={0.24} className="mt-10 flex items-center gap-4">
+            <div className="flex -space-x-2.5">
+              {HERO_AVATARS.map((avatar) => (
+                <InitialsAvatar
+                  key={avatar.initials}
+                  initials={avatar.initials}
+                  color={avatar.color}
+                  className="h-9 w-9 text-[11px] ring-2 ring-slate-50"
+                />
+              ))}
             </div>
-          </div>
-
-          <div className="relative mt-16 h-[450px] w-full sm:h-[500px] lg:mt-0 lg:h-full lg:min-h-[500px]">
-            <div className="absolute top-0 right-4 z-20 w-72 scale-95 rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl shadow-slate-200/50 transition-transform duration-700 hover:-translate-y-2 sm:right-10 sm:w-80 sm:scale-100 lg:top-10">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
-                    <Radio className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-bold text-slate-900">
-                    Live Space
-                  </span>
-                </div>
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
-                  01:24:30
-                </span>
-              </div>
-              <h3 className="mb-2 text-lg font-bold text-slate-900">
-                Scaling Backend
-              </h3>
-              <div className="mb-6 flex flex-wrap gap-2">
-                <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600">
-                  #database
-                </span>
-                <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600">
-                  #backend
-                </span>
-              </div>
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="h-8 w-8 rounded-full bg-slate-200"
-                    style={{
-                      backgroundImage:
-                        'url(https://api.dicebear.com/7.x/avataaars/svg?seed=Felix)',
-                    }}
-                  ></div>
-                  <div className="text-xs">
-                    <p className="font-bold text-slate-900">Felix</p>
-                    <p className="text-slate-500">Host</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 text-slate-400">
-                  <Users className="h-4 w-4" />
-                  <span className="text-xs font-medium">24</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute top-36 left-0 z-10 w-64 scale-95 -rotate-3 rounded-3xl border border-slate-200 bg-slate-900 p-5 shadow-2xl transition-transform duration-500 hover:scale-105 hover:rotate-0 sm:top-40 sm:w-72 sm:scale-100">
-              <div className="mb-3 flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-                <div className="h-3 w-3 rounded-full bg-green-500"></div>
-              </div>
-              <div className="space-y-2 font-mono text-xs text-slate-400">
-                <p>
-                  <span className="text-purple-400">function</span>{' '}
-                  <span className="text-blue-400">optimize</span>() {'{'}
-                </p>
-                <p className="pl-4 text-slate-500">// Discussing this block</p>
-                <p className="pl-4">
-                  <span className="text-purple-400">const</span> cache ={' '}
-                  <span className="text-yellow-300">new</span> Map();
-                </p>
-                <p className="pl-4">return cache.get(key);</p>
-                <p>{'}'}</p>
-              </div>
-            </div>
-            <div className="absolute right-4 bottom-4 z-30 w-60 scale-95 rotate-6 rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-xl backdrop-blur-md transition-transform duration-500 hover:rotate-0 sm:right-20 sm:bottom-20 sm:w-64 sm:scale-100">
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 flex-shrink-0 rounded-full bg-indigo-100 p-1">
-                  <img
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah"
-                    alt="Sarah"
-                    className="h-full w-full rounded-full"
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">Sarah Chen</p>
-                  <p className="text-xs text-slate-500">Product Director</p>
-                  <div className="mt-2 rounded-lg rounded-tl-none bg-blue-50 p-2 text-xs font-medium text-blue-700">
-                    "This architecture review is exactly what I needed."
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+            <p className="text-sm text-slate-500">
+              <span className="font-semibold text-slate-700">
+                10,400+ engineers
+              </span>{' '}
+              already talking
+            </p>
+          </Reveal>
         </div>
+
+        {/* Right: Live Space product panel */}
+        <Reveal delay={0.1} className="relative">
+          <div className="shadow-panel relative z-10 rounded-3xl border border-slate-200/70 bg-white p-5 sm:p-6">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600">
+                <PingDot />
+                LIVE
+              </span>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-slate-400">12:04</span>
+                <MoreHorizontal className="h-4 w-4 text-slate-300" />
+              </div>
+            </div>
+
+            <h3 className="mt-4 text-xl font-bold tracking-tight text-slate-900">
+              Scaling Postgres to 10k writes/sec
+            </h3>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {['#postgres', '#backend', '#scaling'].map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] text-slate-500"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <Waveform
+              bars={48}
+              className="mt-5 h-16 gap-[3px] overflow-hidden rounded-2xl bg-slate-50 px-4 ring-1 ring-slate-100"
+            />
+
+            <div className="mt-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <InitialsAvatar
+                  initials="MP"
+                  color={AVATAR_COLORS.blue}
+                  className="h-11 w-11 text-sm"
+                  speaking
+                />
+                <div className="leading-tight">
+                  <p className="text-sm font-bold text-slate-900">Maya Patel</p>
+                  <p className="text-xs text-slate-500">Host · speaking</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  <InitialsAvatar
+                    initials="DS"
+                    color={AVATAR_COLORS.indigo}
+                    className="h-8 w-8 text-[10px] ring-2 ring-white"
+                  />
+                  <InitialsAvatar
+                    initials="RK"
+                    color={AVATAR_COLORS.slate}
+                    className="h-8 w-8 text-[10px] ring-2 ring-white"
+                  />
+                  <InitialsAvatar
+                    initials="LM"
+                    color={AVATAR_COLORS.amber}
+                    className="h-8 w-8 text-[10px] ring-2 ring-white"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <Headphones className="h-4 w-4" />
+                  <LiveCount
+                    initial={42}
+                    className="text-sm font-semibold text-slate-700"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                onClick={startSpace}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+              >
+                <Hand className="h-4 w-4" /> Request to speak
+              </button>
+              <button
+                type="button"
+                onClick={startSpace}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+              >
+                <Heart className="h-4 w-4" /> 128
+              </button>
+            </div>
+          </div>
+
+          {/* Floating code-snippet card */}
+          <div
+            className="floaty shadow-panel absolute -bottom-16 -left-10 z-0 hidden w-60 -rotate-2 rounded-2xl border border-slate-800 bg-slate-900 p-4 xl:-left-16 xl:block"
+            style={{ animationDelay: '.6s' }}
+          >
+            <div className="mb-3 flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+              <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+              <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+              <span className="ml-auto font-mono text-[10px] text-slate-600">
+                optimize.ts
+              </span>
+            </div>
+            <div className="space-y-1.5 font-mono text-[11px] leading-relaxed text-slate-400">
+              <p>
+                <span className="text-indigo-400">function</span>{' '}
+                <span className="text-blue-400">optimize</span>() {'{'}
+              </p>
+              <p className="pl-3 text-slate-600">// discussing this block</p>
+              <p className="pl-3">
+                <span className="text-indigo-400">const</span> cache ={' '}
+                <span className="text-amber-300">new</span> Map();
+              </p>
+              <p className="pl-3">
+                <span className="text-indigo-400">return</span> cache.get(key);
+              </p>
+              <p>{'}'}</p>
+            </div>
+          </div>
+
+          {/* Floating quote card */}
+          <div
+            className="floaty shadow-panel absolute -right-6 -bottom-14 z-0 hidden w-64 rotate-2 rounded-2xl border border-slate-200/70 bg-white p-4 lg:block xl:-right-12"
+            style={{ animationDelay: '1.4s' }}
+          >
+            <div className="flex items-start gap-3">
+              <InitialsAvatar
+                initials="SC"
+                color={AVATAR_COLORS.slate}
+                className="h-10 w-10 flex-none text-xs"
+              />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-slate-900">Sarah Chen</p>
+                <p className="text-xs text-slate-500">Product Director</p>
+                <div className="mt-2 rounded-xl rounded-tl-sm bg-blue-50 p-2.5 text-xs leading-relaxed font-medium text-blue-700">
+                  "This architecture review is exactly what I needed."
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   )
