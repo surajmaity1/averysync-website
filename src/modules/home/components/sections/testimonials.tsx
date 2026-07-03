@@ -1,112 +1,115 @@
-import { MessageCircle, Quote, Star } from 'lucide-react'
+import { MessageCircle, Star } from 'lucide-react'
 import React from 'react'
-import { TESTIMONIALS } from '../data/data'
-import { SectionLabel } from '../ui/sectionLabel'
+import {
+  FEATURED_TESTIMONIAL,
+  STARRED_TESTIMONIAL,
+  TESTIMONIALS,
+  type Testimonial,
+} from '../data/data'
+import { Eyebrow } from '../ui/eyebrow'
+import { InitialsAvatar } from '../ui/initials-avatar'
+import { Reveal } from '../ui/reveal'
+
+const Attribution: React.FC<{ testimonial: Testimonial; dark?: boolean }> = ({
+  testimonial,
+  dark = false,
+}) => (
+  <figcaption className="mt-6 flex items-center gap-3">
+    <InitialsAvatar
+      initials={testimonial.initials}
+      color={testimonial.color}
+      className="h-10 w-10 text-xs"
+    />
+    <div>
+      <p
+        className={
+          dark ? 'text-sm font-bold' : 'text-sm font-bold text-slate-900'
+        }
+      >
+        {testimonial.author}
+      </p>
+      <p className={dark ? 'text-sm text-slate-400' : 'text-xs text-slate-500'}>
+        {testimonial.role}
+      </p>
+    </div>
+  </figcaption>
+)
 
 export const Testimonials: React.FC = () => {
   return (
-    <section
-      id="testimonials"
-      className="relative overflow-hidden bg-white py-24"
-    >
-      {/* Background Decor */}
-      <div className="pointer-events-none absolute top-0 left-1/2 h-full w-full max-w-7xl -translate-x-1/2 opacity-40">
-        <div className="absolute top-20 left-20 h-72 w-72 rounded-full bg-blue-100 mix-blend-multiply blur-3xl filter"></div>
-        <div className="absolute top-20 right-20 h-72 w-72 rounded-full bg-indigo-100 mix-blend-multiply blur-3xl filter"></div>
-      </div>
-
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-20 flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
-          <div className="max-w-3xl">
-            <SectionLabel>Community Stories</SectionLabel>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-              Loved by <span className="text-blue-600">builders</span>{' '}
-              worldwide.
+    <section id="community" className="py-24 lg:py-28">
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-8">
+        <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div className="max-w-2xl">
+            <Eyebrow className="text-blue-600">Community</Eyebrow>
+            <h2 className="tracking-tightest mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
+              Loved by builders worldwide
             </h2>
-            <p className="mt-6 text-xl leading-relaxed text-slate-600">
-              Join thousands of engineers discussing architecture, career, and
-              code. See what the community is saying about their experience.
-            </p>
           </div>
+          <a
+            href="https://discord.gg/ZhbqDN9fz4"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex w-fit items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800"
+          >
+            <MessageCircle className="h-4 w-4" /> Join the Discord
+          </a>
+        </Reveal>
 
-          <div className="flex-shrink-0">
-            <a
-              href="http://discord.gg/ZhbqDN9fz4"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2.5 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:scale-105 hover:bg-slate-800 hover:shadow-xl"
-            >
-              <MessageCircle className="h-5 w-5" />
-              Join Discord
-            </a>
+        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {/* Featured */}
+          <Reveal className="md:col-span-2">
+            <figure className="flex h-full flex-col justify-between rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white">
+              <blockquote className="text-2xl leading-snug font-medium tracking-tight">
+                "{FEATURED_TESTIMONIAL.content}"
+              </blockquote>
+              <figcaption className="mt-8 flex items-center gap-3">
+                <InitialsAvatar
+                  initials={FEATURED_TESTIMONIAL.initials}
+                  color={FEATURED_TESTIMONIAL.color}
+                  className="h-11 w-11 text-sm"
+                />
+                <div>
+                  <p className="text-sm font-bold">
+                    {FEATURED_TESTIMONIAL.author}
+                  </p>
+                  <p className="text-sm text-slate-400">
+                    {FEATURED_TESTIMONIAL.role}
+                  </p>
+                </div>
+              </figcaption>
+            </figure>
+          </Reveal>
+
+          <div className="flex flex-col gap-5">
+            <Reveal delay={0.1} className="flex-1">
+              <figure className="flex h-full flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6">
+                <div>
+                  <div className="mb-4 flex gap-0.5 text-amber-400">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-400" />
+                    ))}
+                  </div>
+                  <blockquote className="text-base leading-relaxed text-slate-700">
+                    "{STARRED_TESTIMONIAL.content}"
+                  </blockquote>
+                </div>
+                <Attribution testimonial={STARRED_TESTIMONIAL} />
+              </figure>
+            </Reveal>
           </div>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          {TESTIMONIALS.map((t, i) => (
-            <div
-              key={i}
-              className="group relative flex flex-col justify-between rounded-[2rem] border border-slate-100 bg-white p-8 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/50"
-            >
-              {/* Decorative Quote Mark */}
-              <div className="absolute top-8 right-8 opacity-10 transition-opacity group-hover:opacity-20">
-                <Quote className="h-12 w-12 rotate-180 text-blue-600" />
-              </div>
-
-              {/* Stars */}
-              <div className="mb-6 flex gap-1">
-                {[...Array(5)].map((_, starIndex) => (
-                  <Star
-                    key={starIndex}
-                    className="h-4 w-4 fill-amber-400 text-amber-400"
-                  />
-                ))}
-              </div>
-
-              {/* Content */}
-              <blockquote className="mb-8 flex-1">
-                <p className="text-lg leading-relaxed font-medium text-slate-700">
-                  "{t.content}"
-                </p>
-              </blockquote>
-
-              {/* Author Info */}
-              <div className="flex items-center gap-4 border-t border-slate-50 pt-6">
-                <div className="relative">
-                  <div className="h-12 w-12 overflow-hidden rounded-full bg-slate-100 shadow-sm ring-2 ring-white">
-                    <img
-                      src={t.avatar}
-                      alt={t.author}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  {/* Verified Badge */}
-                  <div className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 ring-2 ring-white">
-                    <svg
-                      className="h-3 w-3 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <div className="font-bold text-slate-900">{t.author}</div>
-                  <div className="text-sm font-medium text-slate-500">
-                    {t.role}
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {TESTIMONIALS.map((testimonial, i) => (
+            <Reveal key={testimonial.author} delay={0.05 + i * 0.07}>
+              <figure className="h-full rounded-3xl border border-slate-200 bg-white p-6">
+                <blockquote className="text-base leading-relaxed text-slate-700">
+                  "{testimonial.content}"
+                </blockquote>
+                <Attribution testimonial={testimonial} />
+              </figure>
+            </Reveal>
           ))}
         </div>
       </div>
