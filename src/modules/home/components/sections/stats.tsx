@@ -19,13 +19,11 @@ export const Stats: React.FC = () => {
               <p
                 className={
                   stat.live
-                    ? 'tracking-tightest flex items-center justify-center gap-2.5 text-4xl font-bold text-slate-900 sm:text-5xl md:justify-start'
-                    : 'tracking-tightest text-4xl font-bold text-slate-900 sm:text-5xl'
+                    ? 'flex items-center justify-center gap-2.5 text-4xl font-bold tracking-tightest text-slate-900 sm:text-5xl md:justify-start'
+                    : 'text-4xl font-bold tracking-tightest text-slate-900 sm:text-5xl'
                 }
               >
-                {stat.live && (
-                  <PingDot color="emerald" className="h-2.5 w-2.5" />
-                )}
+                {stat.live && <PingDot color="emerald" className="h-2.5 w-2.5" />}
                 <CountUp value={stat.value} decimals={stat.decimals} />
                 {stat.suffix && (
                   <span className="text-blue-600">{stat.suffix}</span>
