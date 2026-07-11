@@ -11,6 +11,7 @@ export type SfuMsgType =
   | 'space_ended'
   | 'peer_joined'
   | 'peer_left'
+  | 'mic_state'
   | 'error'
 
 export interface SfuSignal {
@@ -19,6 +20,7 @@ export interface SfuSignal {
   candidate?: RTCIceCandidateInit
   peer_id?: string
   message?: string
+  muted?: boolean
 }
 
 export interface SfuMock {

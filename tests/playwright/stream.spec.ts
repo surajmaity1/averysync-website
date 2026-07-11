@@ -111,6 +111,32 @@ test.describe('SpaceStreamManager', () => {
       .toEqual(['alice'])
   })
 
+  test('re-announces mic_state when a peer joins so late joiners discover us', async ({
+    page,
+  }) => {
+    const sfu = await installSfuMock(page)
+    await gotoHarness(page)
+
+    await page.evaluate(({ url }) => window.__sfu.start(url), { url: sfu.url })
+    await expect.poll(() => sfu.sockets.length).toBe(1)
+
+    // The server only broadcasts NEW joins — the newcomer never hears about
+    // us. Our re-announced mic_state (broadcast by the server, stamped with
+    // our peer_id) is how they learn we're in the room.
+    sfu.clearReceived()
+    sfu.push({ type: 'peer_joined', peer_id: 'late-joiner' })
+
+    await expect
+      .poll(() => sfu.received.filter((s) => s.type === 'mic_state').length)
+      .toBe(1)
+
+    // Every join triggers a fresh announcement, not just the first.
+    sfu.push({ type: 'peer_joined', peer_id: 'later-joiner' })
+    await expect
+      .poll(() => sfu.received.filter((s) => s.type === 'mic_state').length)
+      .toBe(2)
+  })
+
   test('stops fully when the host sends space_ended', async ({ page }) => {
     const sfu = await installSfuMock(page)
     await gotoHarness(page)
@@ -207,6 +233,90 @@ test.describe('SpaceStreamManager', () => {
 
     // Initial + 2 retries.
     expect(sfu.sockets.length).toBe(3)
+  })
+
+  test('keeps retrying while the tab is hidden instead of giving up', async ({
+    page,
+  }) => {
+    const sfu = await installSfuMock(page)
+    await gotoHarness(page)
+
+    await page.evaluate(
+      ({ url, opts }) =>
+        window.__sfu.start(url, {
+          managerOptions: { ...opts, maxReconnectAttempts: 2 },
+        }),
+      { url: sfu.url, opts: FAST_BACKOFF },
+    )
+    await expect.poll(() => sfu.sockets.length).toBe(1)
+
+    // Minimize the browser: the page reports itself hidden from here on.
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => 'hidden',
+      })
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    sfu.setDropOnConnect(true)
+    sfu.dropLast()
+
+    // The attempt budget is 2, so a visible tab would stop at 3 sockets and
+    // report 'failed'. A hidden tab must keep trying well past that budget…
+    await expect
+      .poll(() => sfu.sockets.length, { timeout: 5_000 })
+      .toBeGreaterThanOrEqual(6)
+
+    // …and never write off the session while the user isn't looking. The
+    // instantaneous status alternates between 'reconnecting' (waiting out a
+    // backoff) and 'connecting' (an attempt in flight) — both mean the loop
+    // is alive; the log check is what proves 'failed' never happened.
+    const log = await page.evaluate(() => window.__sfu.getStatusLog())
+    expect(log).not.toContain('failed')
+    expect(['reconnecting', 'connecting']).toContain(
+      await page.evaluate(() => window.__sfu.getStatus()),
+    )
+  })
+
+  test('a failed session retries as soon as the user returns to the tab', async ({
+    page,
+  }) => {
+    const sfu = await installSfuMock(page)
+    await gotoHarness(page)
+
+    await page.evaluate(
+      ({ url, opts }) =>
+        window.__sfu.start(url, {
+          managerOptions: { ...opts, maxReconnectAttempts: 2 },
+        }),
+      { url: sfu.url, opts: FAST_BACKOFF },
+    )
+    await expect.poll(() => sfu.sockets.length).toBe(1)
+
+    // Exhaust the budget while visible — a real outage the user watched.
+    sfu.setDropOnConnect(true)
+    sfu.dropLast()
+    await expect
+      .poll(() => page.evaluate(() => window.__sfu.getStatus()), {
+        timeout: 3_000,
+      })
+      .toBe('failed')
+    expect(sfu.sockets.length).toBe(3)
+
+    // The outage ends; the user comes back to the tab.
+    sfu.setDropOnConnect(false)
+    await page.evaluate(() =>
+      document.dispatchEvent(new Event('visibilitychange')),
+    )
+
+    // Returning must retry with a fresh budget instead of staying dead.
+    await expect
+      .poll(() => sfu.sockets.length, { timeout: 2_000 })
+      .toBeGreaterThanOrEqual(4)
+    await expect
+      .poll(() => page.evaluate(() => window.__sfu.getStatus()))
+      .toBe('reconnecting')
   })
 
   test('visibilitychange short-circuits the reconnect backoff', async ({

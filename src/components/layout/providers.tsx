@@ -4,6 +4,7 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import React from 'react'
+import { SpaceSessionRoot } from '../spaces/space-session-root'
 
 let browserQueryClient: QueryClient | undefined = undefined
 
@@ -25,6 +26,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={getQueryClient()}>
       {children}
+      <SpaceSessionRoot />
     </QueryClientProvider>
   )
 }
