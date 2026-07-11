@@ -42,7 +42,7 @@ export const Testimonials: React.FC = () => {
         <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-2xl">
             <Eyebrow className="text-blue-600">Community</Eyebrow>
-            <h2 className="tracking-tightest mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold tracking-tightest text-slate-900 sm:text-4xl">
               Loved by builders worldwide
             </h2>
           </div>
@@ -60,7 +60,7 @@ export const Testimonials: React.FC = () => {
           {/* Featured */}
           <Reveal className="md:col-span-2">
             <figure className="flex h-full flex-col justify-between rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white">
-              <blockquote className="text-2xl leading-snug font-medium tracking-tight">
+              <blockquote className="text-2xl font-medium leading-snug tracking-tight">
                 "{FEATURED_TESTIMONIAL.content}"
               </blockquote>
               <figcaption className="mt-8 flex items-center gap-3">

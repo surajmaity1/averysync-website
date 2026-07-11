@@ -37,7 +37,7 @@ export const Hero: React.FC = () => {
           </Reveal>
 
           <Reveal delay={0.05}>
-            <h1 className="tracking-tightest mt-5 text-[2.9rem] leading-[1.02] font-bold text-slate-900 sm:text-6xl lg:text-[4.1rem]">
+            <h1 className="mt-5 text-[2.9rem] font-bold leading-[1.02] tracking-tightest text-slate-900 sm:text-6xl lg:text-[4.1rem]">
               Where engineers
               <br className="hidden sm:block" /> talk shop,{' '}
               <span className="text-blue-600">live</span>.
@@ -56,7 +56,7 @@ export const Hero: React.FC = () => {
             <button
               type="button"
               onClick={startSpace}
-              className="group shadow-soft inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-700"
+              className="group inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-base font-semibold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:bg-blue-700"
             >
               {!isLoggedIn && (
                 <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white">
@@ -97,7 +97,7 @@ export const Hero: React.FC = () => {
 
         {/* Right: Live Space product panel */}
         <Reveal delay={0.1} className="relative">
-          <div className="shadow-panel relative z-10 rounded-3xl border border-slate-200/70 bg-white p-5 sm:p-6">
+          <div className="relative z-10 rounded-3xl border border-slate-200/70 bg-white p-5 shadow-panel sm:p-6">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600">
                 <PingDot />
@@ -189,7 +189,7 @@ export const Hero: React.FC = () => {
 
           {/* Floating code-snippet card */}
           <div
-            className="floaty shadow-panel absolute -bottom-16 -left-10 z-0 hidden w-60 -rotate-2 rounded-2xl border border-slate-800 bg-slate-900 p-4 xl:-left-16 xl:block"
+            className="floaty absolute -bottom-16 -left-10 z-0 hidden w-60 -rotate-2 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-panel xl:-left-16 xl:block"
             style={{ animationDelay: '.6s' }}
           >
             <div className="mb-3 flex items-center gap-1.5">
@@ -219,7 +219,7 @@ export const Hero: React.FC = () => {
 
           {/* Floating quote card */}
           <div
-            className="floaty shadow-panel absolute -right-6 -bottom-14 z-0 hidden w-64 rotate-2 rounded-2xl border border-slate-200/70 bg-white p-4 lg:block xl:-right-12"
+            className="floaty absolute -right-6 -bottom-14 z-0 hidden w-64 rotate-2 rounded-2xl border border-slate-200/70 bg-white p-4 shadow-panel lg:block xl:-right-12"
             style={{ animationDelay: '1.4s' }}
           >
             <div className="flex items-start gap-3">
@@ -231,7 +231,7 @@ export const Hero: React.FC = () => {
               <div className="min-w-0">
                 <p className="text-sm font-bold text-slate-900">Sarah Chen</p>
                 <p className="text-xs text-slate-500">Product Director</p>
-                <div className="mt-2 rounded-xl rounded-tl-sm bg-blue-50 p-2.5 text-xs leading-relaxed font-medium text-blue-700">
+                <div className="mt-2 rounded-xl rounded-tl-sm bg-blue-50 p-2.5 text-xs font-medium leading-relaxed text-blue-700">
                   "This architecture review is exactly what I needed."
                 </div>
               </div>

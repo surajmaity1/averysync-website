@@ -8,12 +8,17 @@
     "build": "vite build && tsc",
     "format": "prettier --write .",
     "check": "prettier --check .",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:install": "playwright install chromium",
     "preview:worker": "pnpm run build && wrangler dev --port 3000",
     "deploy": "pnpm run build && wrangler deploy",
     "preview": "pnpm run build && vite preview",
     "cf-typegen": "wrangler types"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@tanstack/router-cli": "^1.133.13",
     "@types/node": "24.0.15",
