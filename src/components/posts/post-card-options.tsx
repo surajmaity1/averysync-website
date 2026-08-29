@@ -100,39 +100,39 @@ export const PostCardOptionsButton = ({
   postOwner,
 }: PostCardOptionsProps) => {
   return (
-    <DropDownMenu>
-      <DropDownMenuTrigger>
-        <Button
-          className={cn(
-            post.type === 'POST'
-              ? 'bg-gray-50 hover:bg-gray-100'
-              : 'bg-blue-50 hover:bg-blue-100',
-          )}
-        >
-          <MoreVerticalIcon size={20} />
-        </Button>
-      </DropDownMenuTrigger>
-      <DropDownMenuPortal>
-        <DropDownMenuContent>
-          {postOwner && (
-            <>
-              <DropDownMenuItem>
-                <UpdatePostButton post={post} />
-              </DropDownMenuItem>
-              <DropDownMenuItem>
-                <DeletePostButton postId={post.id} />
-              </DropDownMenuItem>
-            </>
-          )}
-          <DropDownMenuItem>
-            <SharePostButton
-              postId={post.id}
-              postTitle={post.title}
-              postDescription={post.description}
-            />
-          </DropDownMenuItem>
-        </DropDownMenuContent>
-      </DropDownMenuPortal>
-    </DropDownMenu>
+    <div>
+      {postOwner && <UpdatePostButton post={post} />}
+      <DropDownMenu>
+        <DropDownMenuTrigger>
+          <Button
+            className={cn(
+              post.type === 'POST'
+                ? 'bg-gray-50 hover:bg-gray-100'
+                : 'bg-blue-50 hover:bg-blue-100',
+            )}
+          >
+            <MoreVerticalIcon size={20} />
+          </Button>
+        </DropDownMenuTrigger>
+        <DropDownMenuPortal>
+          <DropDownMenuContent>
+            {postOwner && (
+              <>
+                <DropDownMenuItem>
+                  <DeletePostButton postId={post.id} />
+                </DropDownMenuItem>
+              </>
+            )}
+            <DropDownMenuItem>
+              <SharePostButton
+                postId={post.id}
+                postTitle={post.title}
+                postDescription={post.description}
+              />
+            </DropDownMenuItem>
+          </DropDownMenuContent>
+        </DropDownMenuPortal>
+      </DropDownMenu>
+    </div>
   )
 }
