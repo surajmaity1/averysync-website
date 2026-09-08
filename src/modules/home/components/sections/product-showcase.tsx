@@ -30,7 +30,7 @@ export const ProductShowcase: React.FC = () => {
       <div className="mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
           <Eyebrow className="text-blue-600">The product</Eyebrow>
-          <h2 className="mt-4 text-3xl font-bold tracking-tightest text-slate-900 sm:text-4xl">
+          <h2 className="tracking-tightest mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
             Your feed, tuned to signal
           </h2>
           <p className="mt-3 text-lg text-slate-600">
@@ -40,7 +40,7 @@ export const ProductShowcase: React.FC = () => {
         </Reveal>
 
         <Reveal delay={0.1} className="mt-14">
-          <div className="mx-auto max-w-[1080px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-panel">
+          <div className="shadow-panel mx-auto max-w-[1080px] overflow-hidden rounded-2xl border border-slate-200 bg-white">
             {/* Window chrome */}
             <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3">
               <div className="flex gap-1.5">
@@ -147,7 +147,7 @@ export const ProductShowcase: React.FC = () => {
                     <div className="leading-tight">
                       <p className="text-sm font-bold text-slate-900">
                         Diego Santos{' '}
-                        <span className="ml-1 rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-blue-600">
+                        <span className="ml-1 rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase">
                           Host
                         </span>
                       </p>
@@ -181,7 +181,7 @@ export const ProductShowcase: React.FC = () => {
                       <div className="leading-tight">
                         <p className="text-sm font-bold text-slate-900">
                           Priya Sharma{' '}
-                          <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-slate-500">
+                          <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 uppercase">
                             Author
                           </span>
                         </p>

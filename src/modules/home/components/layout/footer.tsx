@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
           <div className="col-span-2 lg:col-span-5">
             <a href="#top" className="flex items-center gap-2.5">
               <BrandMark />
-              <span className="text-lg font-bold tracking-tightest text-slate-900">
+              <span className="tracking-tightest text-lg font-bold text-slate-900">
                 Averysync
               </span>
             </a>
@@ -39,7 +39,9 @@ export const Footer: React.FC = () => {
           {FOOTER_LINKS.map((group, i) => (
             <div
               key={group.heading}
-              className={i === 0 ? 'lg:col-span-2 lg:col-start-8' : 'lg:col-span-2'}
+              className={
+                i === 0 ? 'lg:col-span-2 lg:col-start-8' : 'lg:col-span-2'
+              }
             >
               <Eyebrow className="block text-slate-400">
                 {group.heading}

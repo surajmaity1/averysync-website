@@ -29,7 +29,11 @@ export const PingDot: React.FC<PingDotProps> = ({
         )}
       />
       <span
-        className={cn('relative inline-flex rounded-full', colors.dot, className)}
+        className={cn(
+          'relative inline-flex rounded-full',
+          colors.dot,
+          className,
+        )}
       />
     </span>
   )

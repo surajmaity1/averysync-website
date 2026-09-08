@@ -43,9 +43,7 @@ const STEP_VISUALS: React.ReactNode[] = [
         className="h-7 w-7 text-[10px] ring-2 ring-slate-50"
       />
     </div>
-    <span className="font-mono text-xs text-slate-500">
-      +3 new connections
-    </span>
+    <span className="font-mono text-xs text-slate-500">+3 new connections</span>
   </div>,
 ]
 
@@ -55,7 +53,7 @@ export const HowItWorks: React.FC = () => {
       <div className="mx-auto max-w-[1200px] px-5 sm:px-6 lg:px-8">
         <Reveal className="max-w-2xl">
           <Eyebrow className="text-blue-600">How it works</Eyebrow>
-          <h2 className="mt-4 text-3xl font-bold tracking-tightest text-slate-900 sm:text-4xl">
+          <h2 className="tracking-tightest mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
             From lurker to speaker in three steps
           </h2>
         </Reveal>
