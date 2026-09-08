@@ -27,5 +27,5 @@ pnpm routes:generate
 - [Act Docs](https://nektosact.com/usage/index.html)
 
 ```bash
-act -W '.github/workflows/<yml-file-name.yml>' --container-architecture=linux/amd64
+act -W '.github/workflows/test.yml' --container-architecture=linux/amd64
 ```

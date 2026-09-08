@@ -46,13 +46,13 @@ export const Navbar: React.FC = () => {
           className={cn(
             'mt-4 flex items-center justify-between rounded-2xl border px-4 py-2.5 transition-all duration-500',
             isScrolled || mobileMenuOpen
-              ? 'border-slate-200/70 bg-white/80 shadow-soft backdrop-blur-xl'
+              ? 'shadow-soft border-slate-200/70 bg-white/80 backdrop-blur-xl'
               : 'border-transparent',
           )}
         >
           <a href="#top" className="group flex items-center gap-2.5">
             <BrandMark className="shadow-sm shadow-blue-600/25" />
-            <span className="text-[17px] font-bold tracking-tightest text-slate-900 max-[359px]:hidden">
+            <span className="tracking-tightest text-[17px] font-bold text-slate-900 max-[359px]:hidden">
               Averysync
             </span>
           </a>
@@ -83,7 +83,7 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={startSpace}
-              className="group inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-slate-800 sm:px-4"
+              className="group inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold whitespace-nowrap text-white transition-all hover:bg-slate-800 sm:px-4"
             >
               Start a Space
               <ArrowUpRight className="hidden h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:block" />
@@ -108,7 +108,7 @@ export const Navbar: React.FC = () => {
       {/* Mobile menu */}
       <div
         className={cn(
-          'mx-5 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-soft backdrop-blur-xl md:hidden',
+          'shadow-soft mx-5 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-2 backdrop-blur-xl md:hidden',
           mobileMenuOpen ? 'block' : 'hidden',
         )}
       >

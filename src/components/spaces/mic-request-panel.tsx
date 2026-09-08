@@ -27,9 +27,7 @@ export const MicRequestPanel = ({
     <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
       <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-blue-700">
         <Hand className="h-3.5 w-3.5" />
-        <span>
-          Requests to speak · {requests.length} pending
-        </span>
+        <span>Requests to speak · {requests.length} pending</span>
       </div>
       <div className="space-y-2">
         {requests.map((peerId) => (

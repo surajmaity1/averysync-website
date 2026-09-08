@@ -32,8 +32,8 @@ const SpaceCard: React.FC<{ space: Space; onJoin: () => void }> = ({
     <article
       className={
         isLive
-          ? 'group relative flex h-full flex-col rounded-3xl border border-blue-100 bg-blue-50/40 p-5 ring-1 ring-blue-50 transition-all duration-300 hover:-translate-y-1 hover:shadow-card'
-          : 'group relative flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-card'
+          ? 'group hover:shadow-card relative flex h-full flex-col rounded-3xl border border-blue-100 bg-blue-50/40 p-5 ring-1 ring-blue-50 transition-all duration-300 hover:-translate-y-1'
+          : 'group hover:shadow-card relative flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1'
       }
     >
       <div className="flex items-center justify-between">
@@ -54,7 +54,7 @@ const SpaceCard: React.FC<{ space: Space; onJoin: () => void }> = ({
         )}
       </div>
 
-      <h3 className="mt-4 text-lg font-bold leading-snug tracking-tight text-slate-900">
+      <h3 className="mt-4 text-lg leading-snug font-bold tracking-tight text-slate-900">
         {space.title}
       </h3>
       <div className="mt-2 flex gap-1.5">
@@ -138,11 +138,14 @@ export const Spaces: React.FC = () => {
               <PingDot className="h-2.5 w-2.5" />
               <Eyebrow className="text-slate-500">
                 Happening now ·{' '}
-                <LiveCount initial={47} className="font-semibold text-rose-600" />{' '}
+                <LiveCount
+                  initial={47}
+                  className="font-semibold text-rose-600"
+                />{' '}
                 live
               </Eyebrow>
             </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-tightest text-slate-900 sm:text-4xl">
+            <h2 className="tracking-tightest mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
               Rooms open at this moment
             </h2>
             <p className="mt-3 text-lg text-slate-600">

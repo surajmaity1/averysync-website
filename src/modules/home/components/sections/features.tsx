@@ -19,7 +19,7 @@ export const Features: React.FC = () => {
         <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-2xl">
             <Eyebrow className="text-blue-600">Capabilities</Eyebrow>
-            <h2 className="mt-4 text-3xl font-bold tracking-tightest text-slate-900 sm:text-4xl">
+            <h2 className="tracking-tightest mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
               Built for the way engineers actually communicate
             </h2>
           </div>
@@ -30,7 +30,7 @@ export const Features: React.FC = () => {
           <Reveal className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 md:col-span-4">
             <div>
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-soft">
+                <span className="shadow-soft flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white">
                   <Radio className="h-5 w-5" />
                 </span>
                 <span className="font-mono text-xs text-slate-300">01</span>
@@ -40,8 +40,8 @@ export const Features: React.FC = () => {
               </h3>
               <p className="mt-3 max-w-md text-base leading-relaxed text-slate-600">
                 Real-time audio rooms for design reviews, architecture debates,
-                and career talk — like the hallway track at a conference,
-                always open.
+                and career talk — like the hallway track at a conference, always
+                open.
               </p>
             </div>
             <Waveform

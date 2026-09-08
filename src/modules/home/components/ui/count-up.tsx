@@ -13,7 +13,9 @@ const DURATION_MS = 1500
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
 
 const format = (value: number, decimals: number) =>
-  decimals > 0 ? value.toFixed(decimals) : Math.round(value).toLocaleString('en-US')
+  decimals > 0
+    ? value.toFixed(decimals)
+    : Math.round(value).toLocaleString('en-US')
 
 /**
  * Animates a number from 0 to `value` the first time it scrolls into view.

@@ -14,7 +14,7 @@ export const CallToAction: React.FC = () => {
         <div className="pointer-events-none absolute -top-24 -right-20 h-80 w-80 rounded-full bg-blue-600/20 blur-[100px]" />
         <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center text-center">
           <Eyebrow className="text-blue-400">Early access open</Eyebrow>
-          <h2 className="mt-5 text-4xl font-bold tracking-tightest text-white sm:text-5xl">
+          <h2 className="tracking-tightest mt-5 text-4xl font-bold text-white sm:text-5xl">
             Ready to find your people?
           </h2>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-400">
