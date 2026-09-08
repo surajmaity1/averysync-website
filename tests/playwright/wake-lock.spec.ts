@@ -6,8 +6,9 @@ import { installSfuMock } from './sfu-mock'
 async function installFakeWakeLock(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const state = { requests: 0, releases: 0 }
-    ;(window as unknown as { __wakeLockStats: () => typeof state }).__wakeLockStats =
-      () => ({ ...state })
+    ;(
+      window as unknown as { __wakeLockStats: () => typeof state }
+    ).__wakeLockStats = () => ({ ...state })
 
     const wakeLock = {
       request: async () => {
@@ -45,13 +46,12 @@ async function gotoHarness(page: Page): Promise<void> {
 }
 
 const wakeLockStats = (page: Page) =>
-  page.evaluate(
-    () =>
-      (
-        window as unknown as {
-          __wakeLockStats: () => { requests: number; releases: number }
-        }
-      ).__wakeLockStats(),
+  page.evaluate(() =>
+    (
+      window as unknown as {
+        __wakeLockStats: () => { requests: number; releases: number }
+      }
+    ).__wakeLockStats(),
   )
 
 test.describe('Screen wake lock', () => {

@@ -61,23 +61,23 @@ export function PersistentSpaceBar() {
         {session.canSpeak &&
           (session.status === 'connected' ||
             session.status === 'reconnecting') && (
-          <Button
-            aria-label={session.isMuted ? 'Unmute' : 'Mute'}
-            onClick={() => spaceSession.toggleMute()}
-            className={cn(
-              'h-9 w-9 shrink-0 p-0',
-              session.isMuted
-                ? 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100'
-                : 'border-green-300 bg-green-50 hover:bg-green-100',
-            )}
-          >
-            {session.isMuted ? (
-              <MicOff className="h-4 w-4" />
-            ) : (
-              <Mic className="h-4 w-4" />
-            )}
-          </Button>
-        )}
+            <Button
+              aria-label={session.isMuted ? 'Unmute' : 'Mute'}
+              onClick={() => spaceSession.toggleMute()}
+              className={cn(
+                'h-9 w-9 shrink-0 p-0',
+                session.isMuted
+                  ? 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100'
+                  : 'border-green-300 bg-green-50 hover:bg-green-100',
+              )}
+            >
+              {session.isMuted ? (
+                <MicOff className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
+          )}
 
         {isHost ? (
           <Button
