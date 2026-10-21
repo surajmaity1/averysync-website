@@ -13,7 +13,7 @@ import { Route as InternalRouteImport } from './routes/_internal'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InternalOrgsRouteImport } from './routes/_internal.orgs'
 import { Route as InternalFeedRouteImport } from './routes/_internal.feed'
-import { Route as InternalChatRouteImport } from './routes/_internal.chat'
+import { Route as InternalChatsRouteImport } from './routes/_internal.chats'
 import { Route as InternalFeedIndexRouteImport } from './routes/_internal.feed.index'
 import { Route as InternalFeedPostIdRouteImport } from './routes/_internal.feed.$postId'
 
@@ -36,9 +36,9 @@ const InternalFeedRoute = InternalFeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => InternalRoute,
 } as any)
-const InternalChatRoute = InternalChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
+const InternalChatsRoute = InternalChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
   getParentRoute: () => InternalRoute,
 } as any)
 const InternalFeedIndexRoute = InternalFeedIndexRouteImport.update({
@@ -54,7 +54,7 @@ const InternalFeedPostIdRoute = InternalFeedPostIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/chat': typeof InternalChatRoute
+  '/chats': typeof InternalChatsRoute
   '/feed': typeof InternalFeedRouteWithChildren
   '/orgs': typeof InternalOrgsRoute
   '/feed/$postId': typeof InternalFeedPostIdRoute
@@ -62,7 +62,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/chat': typeof InternalChatRoute
+  '/chats': typeof InternalChatsRoute
   '/orgs': typeof InternalOrgsRoute
   '/feed/$postId': typeof InternalFeedPostIdRoute
   '/feed': typeof InternalFeedIndexRoute
@@ -71,7 +71,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_internal': typeof InternalRouteWithChildren
-  '/_internal/chat': typeof InternalChatRoute
+  '/_internal/chats': typeof InternalChatsRoute
   '/_internal/feed': typeof InternalFeedRouteWithChildren
   '/_internal/orgs': typeof InternalOrgsRoute
   '/_internal/feed/$postId': typeof InternalFeedPostIdRoute
@@ -79,14 +79,14 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/feed' | '/orgs' | '/feed/$postId' | '/feed/'
+  fullPaths: '/' | '/chats' | '/feed' | '/orgs' | '/feed/$postId' | '/feed/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/orgs' | '/feed/$postId' | '/feed'
+  to: '/' | '/chats' | '/orgs' | '/feed/$postId' | '/feed'
   id:
     | '__root__'
     | '/'
     | '/_internal'
-    | '/_internal/chat'
+    | '/_internal/chats'
     | '/_internal/feed'
     | '/_internal/orgs'
     | '/_internal/feed/$postId'
@@ -128,11 +128,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalFeedRouteImport
       parentRoute: typeof InternalRoute
     }
-    '/_internal/chat': {
-      id: '/_internal/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof InternalChatRouteImport
+    '/_internal/chats': {
+      id: '/_internal/chats'
+      path: '/chats'
+      fullPath: '/chats'
+      preLoaderRoute: typeof InternalChatsRouteImport
       parentRoute: typeof InternalRoute
     }
     '/_internal/feed/': {
@@ -167,13 +167,13 @@ const InternalFeedRouteWithChildren = InternalFeedRoute._addFileChildren(
 )
 
 interface InternalRouteChildren {
-  InternalChatRoute: typeof InternalChatRoute
+  InternalChatsRoute: typeof InternalChatsRoute
   InternalFeedRoute: typeof InternalFeedRouteWithChildren
   InternalOrgsRoute: typeof InternalOrgsRoute
 }
 
 const InternalRouteChildren: InternalRouteChildren = {
-  InternalChatRoute: InternalChatRoute,
+  InternalChatsRoute: InternalChatsRoute,
   InternalFeedRoute: InternalFeedRouteWithChildren,
   InternalOrgsRoute: InternalOrgsRoute,
 }

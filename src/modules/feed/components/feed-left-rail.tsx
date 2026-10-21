@@ -23,7 +23,7 @@ type FeedLeftRailProps = {
 type NavItem = {
   icon: LucideIcon
   label: string
-  to?: '/feed' | '/chat'
+  to?: '/feed' | '/chats'
   active?: boolean
 }
 
@@ -31,7 +31,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { icon: Newspaper, label: 'Feed', to: '/feed', active: true },
   { icon: Radio, label: 'Live Spaces' },
-  { icon: MessageSquareText, label: 'Messages', to: '/chat' },
+  { icon: MessageSquareText, label: 'Messages', to: '/chats' },
   { icon: Bookmark, label: 'Bookmarks' },
   { icon: User, label: 'Profile' },
 ]
