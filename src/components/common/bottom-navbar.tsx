@@ -12,7 +12,7 @@ export const BottomNavbar = () => {
           </Button>
         </Link>
 
-        <Link to="/chat" className="flex flex-1 items-center justify-center">
+        <Link to="/chats" className="flex flex-1 items-center justify-center">
           <Button variant="bottomNavbar" size="bottomNavbar">
             <MessageSquareText />
           </Button>
