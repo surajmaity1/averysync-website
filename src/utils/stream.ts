@@ -679,6 +679,38 @@ export class SpaceStreamManager {
     this.send({ type: 'request_mic' })
   }
 
+  /**
+   * Preflight for a mic request: prove this browser can capture audio BEFORE
+   * the hosts are asked, so an approval can never land on a client whose
+   * getUserMedia would fail (previously the first-ever permission prompt
+   * appeared only inside the post-approval promotion rebuild — and a denial
+   * there crash-looped the reconnect machinery).
+   *
+   * The probe track is stopped immediately: a listener must never hold a live
+   * mic capture (the browser's recording indicator would claim we are), and a
+   * lingering localStream on a receive-only session would get published by
+   * the next peer-connection rebuild. Only the granted PERMISSION persists,
+   * which is exactly what makes the later enableSpeaking() acquisition
+   * succeed without prompting.
+   */
+  async ensureMicAccess(): Promise<boolean> {
+    // Publishing sessions captured the mic at start() — permission exists.
+    if (this.opts.sendAudio) return true
+    if (!navigator.mediaDevices?.getUserMedia) return false
+
+    try {
+      const probe = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      })
+      probe.getTracks().forEach((t) => t.stop())
+      return true
+    } catch (err) {
+      console.warn('[SFU] mic permission preflight failed', err)
+      return false
+    }
+  }
+
   /** Host/cohost: grant or decline a listener's mic request. */
   sendMicApproval(peerId: string, approved: boolean): void {
     this.send({ type: approved ? 'approve_mic' : 'deny_mic', peer_id: peerId })

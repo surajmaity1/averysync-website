@@ -33,6 +33,8 @@ export interface ISpaceManager {
   sendModeration(action: ModerationAction, peerId: string): void
   sendMicRequest(): void
   sendMicApproval(peerId: string, approved: boolean): void
+  /** Preflight browser mic permission (may prompt). True when granted. */
+  ensureMicAccess(): Promise<boolean>
 }
 
 export type ManagerFactory = (
@@ -63,6 +65,14 @@ export interface SpaceSessionSnapshot {
   status: ConnectionStatus
   isMuted: boolean
   /**
+   * Whether a HOST muted this client (vs. the user muting their own mic). A
+   * force-mute locks the user's own mute control — only the host may lift it —
+   * so the user cannot simply unmute past a moderation action. Set by the
+   * force-mute wire signal and by the roster reconcile; cleared when the roster
+   * shows the host has lifted the mute.
+   */
+  isForceMuted: boolean
+  /**
    * Whether this session may publish audio. True for hosts/cohosts from the
    * start, and for listeners once a host approves their mic request.
    */
@@ -82,9 +92,23 @@ export interface SpaceSessionSnapshot {
   peerIds: string[]
   /** peerId → muted. Absent peers are treated as live. */
   peerMicStates: Record<string, boolean>
+  /**
+   * Peers whose host mute/unmute is in flight (the authoritative PATCH has not
+   * settled yet). Their mic badge shows a loading skeleton instead of a mic
+   * state, so the host never sees an eager muted/unmuted flip before the
+   * backend confirms it.
+   */
+  moderationPendingPeerIds: string[]
   /** peerId → emoji currently popping on that peer's avatar. */
   reactions: Record<string, string>
   remoteStreams: MediaStream[]
+  /**
+   * Whether the active space's dialog should be showing. Lives here — not in
+   * a feed card — because reopening a minimized space must work from the
+   * persistent bar, which is mounted at the app root and has no access to any
+   * card's local state. False whenever no session is active.
+   */
+  isDialogOpen: boolean
   /**
    * Posts whose spaces are known to have ended, remembered across session
    * resets. A space in here can never be (re)joined — start() refuses it —
@@ -118,8 +142,45 @@ export interface SpaceSessionStore {
   getLocalStream(): MediaStream | null
   start(args: StartArgs): Promise<void>
   toggleMute(): void
+  /**
+   * Reconcile THIS client's own mute against the authoritative roster
+   * (docs/03 §4.3.2 / §5.3: the REST DTO is the source of truth for the UI).
+   * A host mute is persisted on the backend and enforced by the SFU, but there
+   * is no real-time wire signal to the target — server→SFU push is a future
+   * hook (docs/03 §7), so the SFU only *pulls* the roster. Without this a muted
+   * user's own badge (driven by local `isMuted`) never flips while everyone
+   * else sees them muted. When the roster reports us muted, apply it locally:
+   * flip the snapshot AND mute the mic track (whose mic_state broadcast makes
+   * every other client consistent too) and lock the control via `isForceMuted`.
+   * When the roster reports us unmuted, only the LOCK is released — the mic is
+   * never auto-UNMUTED, as re-opening it is the user's own choice (mirrors
+   * onMicApproved staying muted until they act).
+   */
+  reconcileSelfMute(rosterMuted: boolean): void
   sendReaction(emoji: string, selfPeerId?: string): void
+  /**
+   * Begin a host mute: relay it over the SFU for instant enforcement and mark
+   * the peer moderation-pending (a loading skeleton badge). The authoritative
+   * muted badge lands on `settlePeerMute`, never as an eager optimistic flip.
+   */
   mutePeer(peerId: string): void
+  /**
+   * Begin a host unmute: there is NO `unmute_peer` wire signal and NO
+   * optimistic unmute. A host unmute only lifts the moderation lock — the
+   * target stays muted until THEY re-open their own mic (mirrors
+   * reconcileSelfMute never auto-unmuting). This just marks the peer
+   * moderation-pending (loading skeleton) until `settlePeerMute` clears it.
+   */
+  unmutePeer(peerId: string): void
+  /**
+   * Resolve a host mute/unmute once its backend PATCH settles: drop the peer's
+   * loading skeleton. On a mute (`muted: true`) also mark the badge muted, to
+   * match the SFU-enforced reality without waiting on the target's mic_state
+   * echo. On an unmute (`muted: false`) the badge is left untouched — the peer
+   * stays muted until they re-open their mic; this is also the error path
+   * (clear the skeleton, assert nothing).
+   */
+  settlePeerMute(peerId: string, muted: boolean): void
   removePeer(peerId: string): void
   blockPeer(peerId: string): void
   /**
@@ -130,8 +191,14 @@ export interface SpaceSessionStore {
    * is torn down. Idempotent.
    */
   markSpaceEnded(postId: string): void
-  /** Listener: ask the hosts for permission to speak. */
-  requestMic(): void
+  /**
+   * Listener: ask the hosts for permission to speak. The browser's mic
+   * permission is secured FIRST (prompting on first use — the click is the
+   * user gesture the prompt needs); only a granted browser is allowed to ask
+   * the hosts, so an approval can never land on a client that cannot capture
+   * audio. Resolves true when the request was actually sent.
+   */
+  requestMic(): Promise<boolean>
   /** Host/cohost: answer a pending mic request. */
   approveMicRequest(peerId: string): void
   denyMicRequest(peerId: string): void
@@ -139,6 +206,10 @@ export interface SpaceSessionStore {
   sendEndSpace(): void
   /** Stop the session locally and reset. No end_space broadcast. */
   leave(): void
+  /** Show the active space's dialog again (reopen from the persistent bar). */
+  openDialog(): void
+  /** Hide the dialog — minimize. The session is untouched. */
+  closeDialog(): void
 }
 
 /** How long a reaction emoji stays visible on an avatar. */
@@ -150,6 +221,7 @@ const IDLE: SpaceSessionSnapshot = {
   role: null,
   status: 'idle',
   isMuted: false,
+  isForceMuted: false,
   canSpeak: false,
   hasRequestedMic: false,
   isHostPresent: false,
@@ -158,6 +230,8 @@ const IDLE: SpaceSessionSnapshot = {
   peerMicStates: {},
   reactions: {},
   remoteStreams: [],
+  moderationPendingPeerIds: [],
+  isDialogOpen: false,
   endedSpaceIds: [],
 }
 
@@ -232,25 +306,37 @@ export function createSpaceSessionStore(
     isHostPresent: state.isHostPresent || peerId === sessionHostId,
   })
 
+  // Add a peer to the moderation-pending set (loading skeleton) idempotently.
+  const withPending = (peerId: string) =>
+    state.moderationPendingPeerIds.includes(peerId)
+      ? state.moderationPendingPeerIds
+      : [...state.moderationPendingPeerIds, peerId]
+
   const callbacks = (): ManagerCallbacks => ({
     onStatusChange: (status) => {
-      // Coming back from an outage ('reconnecting' → 'connected'): any roster
-      // carried across the gap is untrustworthy — peer_left broadcasts missed
-      // while the socket was down are lost forever, so departed users would
-      // linger as ghosts (the host reconnecting after an internet drop kept
-      // seeing users who left mid-outage). Drop it; live signals rebuild it
-      // within a round-trip — our rejoin makes every peer actually present
-      // re-announce mic_state (doc 10), and presence is re-inferred from
-      // that. isHostPresent is deliberately kept: a stale `false` self-heals
-      // via the host's own re-announcement, while a wiped-to-`true` could
-      // never heal back — absence cannot be inferred from silence.
-      if (status === 'connected' && state.status === 'reconnecting') {
+      // The roster becomes untrustworthy the instant an established
+      // connection is lost: peer_left broadcasts missed while the socket is
+      // down are gone forever, so departed users would linger as ghosts (the
+      // host reconnecting after an internet drop kept seeing users who left
+      // mid-outage). Drop it on the way OUT of 'connected' — not when
+      // 'connected' comes back — because peers re-announce mic_state the
+      // moment the server registers our rejoin (doc 10), and that can arrive
+      // over the new socket before the peer connection reports 'connected';
+      // clearing on arrival would wipe those just-relearned peers. This also
+      // uniformly covers the listener-promotion rebuild ('connected' →
+      // 'connecting'). isHostPresent is deliberately kept: a stale `false`
+      // self-heals via the host's own re-announcement, while a
+      // wiped-to-`true` could never heal back — absence cannot be inferred
+      // from silence.
+      if (state.status === 'connected' && status !== 'connected') {
         setState({
           status,
           peerIds: [],
           peerMicStates: {},
           remoteStreams: [],
           micRequests: [],
+          // Any in-flight host moderation is moot once the roster is dropped.
+          moderationPendingPeerIds: [],
         })
         return
       }
@@ -313,7 +399,7 @@ export function createSpaceSessionStore(
       // Granted the mic: may speak now, but stays muted until they unmute.
       setState({ canSpeak: true, isMuted: true, hasRequestedMic: false }),
     onMicDenied: () => setState({ hasRequestedMic: false }),
-    onForceMuted: () => setState({ isMuted: true }),
+    onForceMuted: () => setState({ isMuted: true, isForceMuted: true }),
     onRemoved: () => resetSession(),
   })
 
@@ -406,9 +492,29 @@ export function createSpaceSessionStore(
     toggleMute() {
       // Listeners are receive-only — there is no mic to unmute.
       if (!state.canSpeak) return
+      // A host force-mute cannot be lifted by the user — only the host unmutes.
+      // The control is disabled in the UI too; this is the store-level guard.
+      if (state.isForceMuted) return
       const next = !state.isMuted
       manager?.toggleMute(next)
       setState({ isMuted: next })
+    },
+
+    reconcileSelfMute(rosterMuted) {
+      if (!manager) return
+      if (rosterMuted) {
+        // Host mute learned from the roster. Engage the lock; only mute the
+        // track if it isn't already off, so a user who was already self-muted
+        // doesn't emit a redundant mic_state. toggleMute(true) also broadcasts
+        // mic_state, which reconciles every other client's badge for us.
+        if (state.isForceMuted) return
+        if (!state.isMuted) manager.toggleMute(true)
+        setState({ isMuted: true, isForceMuted: true })
+      } else if (state.isForceMuted) {
+        // The host lifted the mute. Release the lock but leave the mic muted —
+        // re-opening it is the user's own choice (mirrors onMicApproved).
+        setState({ isForceMuted: false })
+      }
     },
 
     sendReaction(emoji, selfPeerId) {
@@ -417,8 +523,36 @@ export function createSpaceSessionStore(
     },
 
     mutePeer(peerId) {
+      // Real-time enforce over the SFU (the target force-mutes and re-announces
+      // mic_state). No eager badge flip — a loading skeleton shows until the
+      // authoritative PATCH settles (settlePeerMute).
       manager?.sendModeration('mute_peer', peerId)
-      setState({ peerMicStates: { ...state.peerMicStates, [peerId]: true } })
+      setState({ moderationPendingPeerIds: withPending(peerId) })
+    },
+
+    unmutePeer(peerId) {
+      // No wire signal and NO optimistic unmute: a host unmute only lifts the
+      // lock — the target stays muted until they re-open their own mic. Just
+      // show the loading skeleton until settlePeerMute clears it.
+      setState({ moderationPendingPeerIds: withPending(peerId) })
+    },
+
+    settlePeerMute(peerId, muted) {
+      const moderationPendingPeerIds = state.moderationPendingPeerIds.filter(
+        (id) => id !== peerId,
+      )
+      if (muted) {
+        // A settled mute marks the badge muted; the target's mic_state echo
+        // (or roster) keeps every other client consistent.
+        setState({
+          moderationPendingPeerIds,
+          peerMicStates: { ...state.peerMicStates, [peerId]: true },
+        })
+      } else {
+        // A settled unmute (or a failed action) only drops the skeleton — the
+        // badge is untouched, so a still-muted peer keeps showing muted.
+        setState({ moderationPendingPeerIds })
+      }
     },
 
     removePeer(peerId) {
@@ -443,11 +577,31 @@ export function createSpaceSessionStore(
       }
     },
 
-    requestMic() {
+    async requestMic() {
       // Speakers have nothing to request; one pending request at a time.
-      if (state.canSpeak || state.hasRequestedMic) return
-      manager?.sendMicRequest()
+      if (!manager || state.canSpeak || state.hasRequestedMic) return false
+
+      // Claim the pending slot BEFORE the (slow, user-facing) permission
+      // prompt so a second click while it is open cannot double-request.
+      const m = manager
       setState({ hasRequestedMic: true })
+
+      const granted = await m.ensureMicAccess()
+
+      // The session may have reset or switched while the prompt was open —
+      // a stale grant must neither message the old manager nor dirty the
+      // NEW session's state.
+      if (manager !== m) return false
+
+      if (!granted) {
+        // Nothing was sent; free the slot so the user can try again after
+        // enabling mic access in the browser.
+        setState({ hasRequestedMic: false })
+        return false
+      }
+
+      m.sendMicRequest()
+      return true
     },
 
     approveMicRequest(peerId) {
@@ -473,6 +627,18 @@ export function createSpaceSessionStore(
     leave() {
       manager?.stop()
       resetSession()
+    },
+
+    openDialog() {
+      // Nothing to reopen without a session; also keeps the app-root dialog
+      // from ever showing while idle.
+      if (!state.activePostId || state.isDialogOpen) return
+      setState({ isDialogOpen: true })
+    },
+
+    closeDialog() {
+      if (!state.isDialogOpen) return
+      setState({ isDialogOpen: false })
     },
   }
 }

@@ -1,3 +1,4 @@
+import { FloatingChat } from '@/components/chat/floating-chat'
 import { BottomNavbar } from '@/components/common/bottom-navbar'
 import { ErrorPage } from '@/components/common/error-page'
 import { Shimmer } from '@/components/common/shimmer'
@@ -16,6 +17,9 @@ function InternalLayout() {
         <Toaster position="top-right" />
         <BottomNavbar />
         <Outlet />
+        {/* App-wide floating chat. Mounted at the layout level so it persists
+            across every authenticated page and survives navigation. */}
+        <FloatingChat />
       </div>
     </MainContainerWrapper>
   )
