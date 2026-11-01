@@ -1,5 +1,6 @@
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { ChatContainer } from './components/chat-container'
 import { PageHeader } from './page-header'
 
 export const Chats = () => {
@@ -7,7 +8,8 @@ export const Chats = () => {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <PageHeader/>
+        <PageHeader />
+        <ChatContainer />
       </SidebarInset>
     </SidebarProvider>
   )

@@ -22,7 +22,7 @@ importers:
         version: 5.2.8
       '@hookform/resolvers':
         specifier: ^5.2.2
-        version: 5.2.2(react-hook-form@7.65.0(react@19.2.3))
+        version: 5.2.2(react-hook-form@7.90.0(@types/react@19.2.7)(react@19.2.3))
       '@mui/icons-material':
         specifier: ^7.3.4
         version: 7.3.4(@mui/material@7.3.4(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3)(supports-color@10.2.2))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3)(supports-color@10.2.2))(@types/react@19.2.7)(react@19.2.3)(supports-color@10.2.2))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react@19.2.3)
@@ -93,8 +93,8 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(react@19.2.3)
       react-hook-form:
-        specifier: ^7.65.0
-        version: 7.65.0(react@19.2.3)
+        specifier: ^7.90.0
+        version: 7.90.0(@types/react@19.2.7)(react@19.2.3)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -3796,11 +3796,15 @@ packages:
     peerDependencies:
       react: ^19.2.3
 
-  react-hook-form@7.65.0:
-    resolution: {integrity: sha512-xtOzDz063WcXvGWaHgLNrNzlsdFgtUWcb32E6WFaGTd7kPZG3EeDusjdZfUsPwKCKVXy1ZlntifaHZ4l8pAsmw==}
+  react-hook-form@7.90.0:
+    resolution: {integrity: sha512-+NdG0FLzCPhFOp2NNxaUYLF9fyZhNjx9FTBBSYWF71/l6BBlmIc/j6xlp3DbaHWLJbIG7Zd8oznA19xJClU97w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
+      '@types/react': '*'
       react: ^16.8.0 || ^17 || ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -5119,10 +5123,10 @@ snapshots:
 
   '@fontsource/roboto@5.2.8': {}
 
-  '@hookform/resolvers@5.2.2(react-hook-form@7.65.0(react@19.2.3))':
+  '@hookform/resolvers@5.2.2(react-hook-form@7.90.0(@types/react@19.2.7)(react@19.2.3))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.65.0(react@19.2.3)
+      react-hook-form: 7.90.0(@types/react@19.2.7)(react@19.2.3)
 
   '@humanfs/core@0.19.1': {}
 
@@ -7578,9 +7582,11 @@ snapshots:
       react: 19.2.3
       scheduler: 0.27.0
 
-  react-hook-form@7.65.0(react@19.2.3):
+  react-hook-form@7.90.0(@types/react@19.2.7)(react@19.2.3):
     dependencies:
       react: 19.2.3
+    optionalDependencies:
+      '@types/react': 19.2.7
 
   react-is@16.13.1: {}
 

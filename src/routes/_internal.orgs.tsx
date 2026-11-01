@@ -1,12 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { lazy } from "react";
+import { createFileRoute } from '@tanstack/react-router'
+import { lazy } from 'react'
 
-const Orgs = lazy(() => import('@/modules/orgs').then((m) => ({default: m.OrgsPage})));
+const Orgs = lazy(() =>
+  import('@/modules/orgs').then((m) => ({ default: m.OrgsPage })),
+)
 
 function OrgsPage() {
-    return <Orgs/>
+  return <Orgs />
 }
 
 export const Route = createFileRoute('/_internal/orgs')({
-    component: OrgsPage
+  component: OrgsPage,
 })

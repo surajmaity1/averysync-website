@@ -14,7 +14,7 @@ export const AppSidebar = ({ ...props }) => {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <Link to="/">
+        <Link to="/feed">
           <AverysyncLogo />
         </Link>
       </SidebarHeader>
