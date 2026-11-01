@@ -46,7 +46,7 @@ export const FeedTopBar = ({ user, onStartSpace }: FeedTopBarProps) => {
           </button>
 
           <Link
-            to="/chat"
+            to="/chats"
             aria-label="Messages"
             className="flex h-[42px] w-[42px] items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
           >

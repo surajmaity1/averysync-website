@@ -1,4 +1,4 @@
-import { HomeIcon, LucideIcon } from 'lucide-react'
+import { LucideIcon, MessageCircle } from 'lucide-react'
 
 export type TSidebarLink = {
   id: string
@@ -9,9 +9,9 @@ export type TSidebarLink = {
 
 export const SIDEBARS: TSidebarLink[] = [
   {
-    id: 'home',
-    title: 'home',
-    url: '/home',
-    icon: HomeIcon,
+    id: 'chats',
+    title: 'Chat',
+    url: '/chats',
+    icon: MessageCircle,
   },
 ]
