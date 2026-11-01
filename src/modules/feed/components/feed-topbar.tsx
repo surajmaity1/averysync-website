@@ -2,8 +2,7 @@ import { POST_TYPE_ENUM } from '@/api/posts/posts.enum'
 import { TUser } from '@/api/users/users.type'
 import { AvatarUser } from '@/components/ui/avatar'
 import { Link } from '@tanstack/react-router'
-import { Bell, MessageSquareText, Radio, Search } from 'lucide-react'
-import { toast } from 'sonner'
+import { Bell, MessageSquareText, Radio, Search, Sparkles } from 'lucide-react'
 
 type FeedTopBarProps = {
   user: TUser
@@ -14,17 +13,21 @@ type FeedTopBarProps = {
 export const FeedTopBar = ({ user, onStartSpace }: FeedTopBarProps) => {
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-full max-w-[1280px] items-center gap-5 px-4 lg:px-6">
+      <div className="mx-auto flex h-full max-w-[1280px] items-center gap-3 px-4 sm:gap-5 lg:px-6">
         <Link to="/feed" className="flex flex-shrink-0 items-center gap-2.5">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-slate-900/5">
             <img src="/favicon.ico" alt="" width={22} height={22} />
           </span>
-          <span className="text-lg font-bold tracking-tight text-slate-900">
+          {/* The wordmark eats width two nav buttons need on the smallest
+              phones; the logo mark alone still identifies the app there. */}
+          <span className="xs:inline hidden text-lg font-bold tracking-tight text-slate-900">
             Averysync
           </span>
         </Link>
 
-        <label className="flex h-[42px] max-w-[440px] flex-1 items-center gap-2.5 rounded-full border border-transparent bg-slate-100 px-3.5 transition-colors focus-within:border-slate-200 focus-within:bg-white focus-within:shadow-sm">
+        {/* Search is placeholder-only chrome; hide it on phones (unusable at
+            ~320px) so the real nav actions fit without sideways scroll. */}
+        <label className="hidden h-[42px] max-w-[440px] min-w-0 flex-1 items-center gap-2.5 rounded-full border border-transparent bg-slate-100 px-3.5 transition-colors focus-within:border-slate-200 focus-within:bg-white focus-within:shadow-sm sm:flex">
           <Search className="h-[18px] w-[18px] text-slate-400" />
           <input
             type="search"
@@ -35,15 +38,24 @@ export const FeedTopBar = ({ user, onStartSpace }: FeedTopBarProps) => {
         </label>
 
         <nav className="ml-auto flex flex-shrink-0 items-center gap-2">
-          <button
-            type="button"
+          {/* Hidden on phones — the bottom navbar carries the AI entry there
+              and top-bar width is already tight at ~320px. */}
+          <Link
+            to="/ai/chat"
+            aria-label="AI assistant"
+            className="hidden h-[42px] w-[42px] items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 md:flex"
+          >
+            <Sparkles className="h-5 w-5" />
+          </Link>
+
+          <Link
+            to="/notifications"
             aria-label="Notifications"
-            onClick={() => toast.info('Notifications coming soon!')}
             className="relative flex h-[42px] w-[42px] items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
           >
             <Bell className="h-5 w-5" />
             <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white" />
-          </button>
+          </Link>
 
           <Link
             to="/chat"

@@ -47,11 +47,11 @@ export const FeedComposer = ({ user, onCompose }: FeedComposerProps) => {
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => onCompose(POST_TYPE_ENUM.SPACE)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold whitespace-nowrap text-slate-700 transition-colors hover:bg-slate-200"
             >
               <Radio className="h-4 w-4 text-blue-600" strokeWidth={2.2} />
               <span>Start a Space</span>
@@ -59,7 +59,7 @@ export const FeedComposer = ({ user, onCompose }: FeedComposerProps) => {
             <button
               type="button"
               onClick={() => onCompose(POST_TYPE_ENUM.POST)}
-              className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition-colors hover:bg-blue-700"
+              className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold whitespace-nowrap text-white shadow-sm shadow-blue-200 transition-colors hover:bg-blue-700"
             >
               Post
             </button>
