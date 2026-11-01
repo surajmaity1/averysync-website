@@ -7,11 +7,16 @@ import { PostStatus, SpaceStatus } from '@/types/post'
 import { shouldAutoJoinSpace } from '@/utils/space-auto-join'
 import { shouldOfferManualJoin } from '@/utils/space-manual-join'
 import {
+  findOwnParticipant,
+  isEffectivelyMuted,
+} from '@/utils/space-participant-roster'
+import {
   roleCanModerate,
   spaceSession,
   useSpaceSession,
 } from '@/utils/space-session-store'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { CircleX, Hand, Mic, MicOff, Play, Users, XIcon } from 'lucide-react'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -27,12 +32,22 @@ import { MicRequestPanel } from './mic-request-panel'
 import { ReactionPicker } from './reaction-picker'
 import { SpaceParticipants } from './space-participants'
 import { useEndSpace } from './use-end-space'
+import { useSpaceModeration } from './use-space-moderation'
+import { useSpaceRoster } from './use-space-participants'
 
 type SpaceAlertDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   post: Post
-  children: ReactNode
+  /**
+   * Trigger content. Omit for programmatic dialogs (the app-root one): a
+   * trigger rendered with no visible content is still a focusable button, and
+   * Radix focuses the trigger on close — an invisible trigger at the end of
+   * <body> made closing the dialog scroll the page to the bottom.
+   */
+  children?: ReactNode
+  /** Override Radix's close focus-return (see utils/space-dialog-focus). */
+  onCloseAutoFocus?: (event: Event) => void
 }
 
 const draftWebsocketURL = `${applicationConfig.streamURL}/ws`
@@ -42,13 +57,19 @@ export const SpaceAlertDialog = ({
   onOpenChange,
   post,
   children,
+  onCloseAutoFocus,
 }: SpaceAlertDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogTrigger className="flex space-x-2">
-        {children}
-      </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-md bg-gray-50">
+      {children != null && (
+        <AlertDialogTrigger className="flex space-x-2">
+          {children}
+        </AlertDialogTrigger>
+      )}
+      <AlertDialogContent
+        className="max-w-md bg-gray-50"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <AlertDialogTitle className="font-semibold">
           {post.title}
         </AlertDialogTitle>
@@ -74,8 +95,14 @@ type SpaceDetailViewProps = {
   onClose: () => void
 }
 
+// How often each connected client re-pulls the roster to reconcile its own
+// mute. A host mute has no real-time signal to the target (docs/03 §7), so this
+// poll is what flips the muted user's own badge; keep it snappy but cheap.
+const SELF_MUTE_RECONCILE_MS = 4_000
+
 const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [connectionToken, setConnectionToken] = useState<string | null>(null)
   const [websocketUrl, setWebsocketUrl] = useState<string | null>(null)
   const joinAttemptedRef = useRef(false)
@@ -94,6 +121,9 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
   const isConnected = isThisSpace && session.isConnected
   const isReconnecting = isThisSpace && session.isReconnecting
   const isMuted = session.isMuted
+  // A host muted this client — the user's own unmute control is locked until
+  // the host lifts it (enforced in the store's toggleMute too).
+  const isForceMuted = session.isForceMuted
   const canSpeak = session.canSpeak
   // Moderation surfaces (approve/deny, request badges) are for hosts/cohosts
   // only. Deliberately role-based, NOT canSpeak — a mic-approved listener can
@@ -101,6 +131,7 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
   const isModerator = isThisSpace && roleCanModerate(session.role)
   const { hasRequestedMic, micRequests } = session
   const { peerIds, peerMicStates, reactions, remoteStreams } = session
+  const { moderationPendingPeerIds } = session
 
   const { data: userData } = useQuery({
     queryKey: UsersAPI.getUserInfo.key,
@@ -121,6 +152,24 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     (hostPresent ? 1 : 0) + (isHost ? 0 : 1) + activePeerIds.length
 
   const endSpace = useEndSpace(post.id)
+  const moderation = useSpaceModeration(post.id)
+
+  // Roster reconcile loop (docs/03 §4.3.2 / §5.3): the REST DTO is the source
+  // of truth for the UI. Polled while connected so a host mute — which reaches
+  // the backend but has no real-time wire signal to the target — flips the
+  // muted user's OWN badge and locks their unmute control; a host UNMUTE
+  // releases that lock. The store applies mute (never auto-unmute), and the
+  // resulting mic_state broadcast reconciles every other client too.
+  const { data: roster } = useSpaceRoster(post.id, {
+    enabled: isThisSpace && (isConnected || isReconnecting),
+    refetchIntervalMs: SELF_MUTE_RECONCILE_MS,
+  })
+  const ownRow = findOwnParticipant(roster?.data ?? [], userData?.id)
+  const rosterSelfMuted = ownRow ? isEffectivelyMuted(ownRow) : false
+
+  useEffect(() => {
+    if (isThisSpace) spaceSession.reconcileSelfMute(rosterSelfMuted)
+  }, [isThisSpace, rosterSelfMuted])
 
   const startSpace = (token: string) =>
     spaceSession.start({
@@ -272,10 +321,23 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     spaceSession.toggleMute()
   }
 
-  // Host moderation — optimistic locally, relayed to the target by the server.
+  // Host moderation — persisted to the authoritative backend (so the SFU
+  // enforces the mute and every other participant reconciles it), with an
+  // optimistic SFU relay + local badge for instant host-side feedback.
   const handleMutePeer = (peerId: string, name: string) => {
-    spaceSession.mutePeer(peerId)
-    toast.success(`Muted ${name}`)
+    moderation.mutePeer(peerId, name)
+  }
+
+  const handleUnmutePeer = (peerId: string, name: string) => {
+    moderation.unmutePeer(peerId, name)
+  }
+
+  // Minimize the dialog before navigating — the session lives in the store,
+  // so audio keeps playing and the persistent bar can reopen the space from
+  // the profile page.
+  const handleViewProfile = (userId: string) => {
+    onClose()
+    void navigate({ to: '/$userId', params: { userId } })
   }
 
   const handleRemovePeer = (peerId: string, name: string) => {
@@ -288,10 +350,16 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
     toast.success(`Blocked ${name} from this space`)
   }
 
-  const handleRequestMic = (e: React.MouseEvent) => {
+  const handleRequestMic = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    spaceSession.requestMic()
-    toast.success('Request sent — the host will let you in')
+    // First-time users get the browser's mic permission prompt here; the
+    // hosts are only asked once the browser has granted access.
+    const sent = await spaceSession.requestMic()
+    if (sent) {
+      toast.success('Request sent — the host will let you in')
+    } else {
+      toast.error('Allow microphone access in your browser to request the mic')
+    }
   }
 
   const handleApproveMicRequest = (peerId: string, name: string) => {
@@ -322,7 +390,9 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
           </div>
           <p className="mt-1 text-xs text-green-600">
             {canSpeak
-              ? `Your audio is ${isMuted ? 'muted' : 'live'}`
+              ? isForceMuted
+                ? 'You were muted by the host'
+                : `Your audio is ${isMuted ? 'muted' : 'live'}`
               : "You're listening — request the mic below to speak"}
           </p>
           <p className="mt-1 text-xs text-green-700/80">
@@ -407,10 +477,13 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
           micRequests={micRequests}
           isSelfMuted={isMuted}
           peerMicStates={peerMicStates}
+          moderationPendingPeerIds={moderationPendingPeerIds}
           reactions={reactions}
           localStream={spaceSession.getLocalStream()}
           remoteStreams={remoteStreams}
+          onViewProfile={handleViewProfile}
           onMutePeer={handleMutePeer}
+          onUnmutePeer={handleUnmutePeer}
           onRemovePeer={handleRemovePeer}
           onBlockPeer={handleBlockPeer}
         />
@@ -444,14 +517,27 @@ const SpaceDetailView = ({ post, onClose }: SpaceDetailViewProps) => {
         <div className="flex gap-2">
           <Button
             onClick={handleToggleMute}
+            disabled={isForceMuted}
+            title={
+              isForceMuted
+                ? 'The host muted you — only they can unmute'
+                : undefined
+            }
             className={cn(
               'flex-1',
-              isMuted
-                ? 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100'
-                : 'border-green-300 bg-green-50 hover:bg-green-100',
+              isForceMuted
+                ? 'border-gray-300 bg-gray-100 text-gray-500 disabled:cursor-not-allowed'
+                : isMuted
+                  ? 'border-yellow-300 bg-yellow-50 hover:bg-yellow-100'
+                  : 'border-green-300 bg-green-50 hover:bg-green-100',
             )}
           >
-            {isMuted ? (
+            {isForceMuted ? (
+              <>
+                <MicOff className="mr-2 h-4 w-4" />
+                Muted by host
+              </>
+            ) : isMuted ? (
               <>
                 <MicOff className="mr-2 h-4 w-4" />
                 Unmute

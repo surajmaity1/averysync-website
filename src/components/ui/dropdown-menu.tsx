@@ -44,6 +44,19 @@ export function DropDownMenuContent({
   )
 }
 
+export function DropDownMenuSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof DropDownMenuPrimitive.Separator>) {
+  return (
+    <DropDownMenuPrimitive.Separator
+      data-slot="cusomize-dropdown-menu-separator"
+      className={cn('my-1 h-px bg-gray-200', className)}
+      {...props}
+    />
+  )
+}
+
 export function DropDownMenuItem({
   ...props
 }: React.ComponentProps<typeof DropDownMenuPrimitive.Item>) {

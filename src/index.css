@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 
 @theme {
+  /* Narrowest-phone breakpoint (below the default sm=640) so the top bar can
+     drop the wordmark only on truly tight screens. */
+  --breakpoint-xs: 25rem;
+
   --font-sans:
     'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;

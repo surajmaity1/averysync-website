@@ -7,6 +7,7 @@ import { AvatarUser } from '@/components/ui/avatar'
 import { cn, formatPostDate } from '@/libs/utils'
 import { PostStatus } from '@/types/post'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import {
   Clock,
   LucideIcon,
@@ -96,25 +97,35 @@ const PostHeader = ({ post }: { post: Post }) => {
 
   return (
     <div className="mb-3.5 flex items-center gap-3">
-      <AvatarUser src={author?.image} name={author?.name} size={44} />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="flex items-center gap-2 text-sm font-bold text-slate-900">
-          <span className="truncate">{author?.name || 'Averysync member'}</span>
-          <span
-            className={cn(
-              'flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase',
-              isSpace
-                ? 'bg-blue-50 text-blue-600'
-                : 'bg-slate-100 text-slate-500',
-            )}
-          >
-            {isSpace ? 'Host' : 'Author'}
+      <Link
+        to="/$userId"
+        params={{ userId: post.createdBy }}
+        onClick={(e) => e.stopPropagation()}
+        aria-label={`View ${author?.name || 'author'}'s profile`}
+        className="group/author flex min-w-0 flex-1 items-center gap-3"
+      >
+        <AvatarUser src={author?.image} name={author?.name} size={44} />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="flex items-center gap-2 text-sm font-bold text-slate-900">
+            <span className="truncate group-hover/author:underline">
+              {author?.name || 'Averysync member'}
+            </span>
+            <span
+              className={cn(
+                'flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase',
+                isSpace
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'bg-slate-100 text-slate-500',
+              )}
+            >
+              {isSpace ? 'Host' : 'Author'}
+            </span>
           </span>
-        </span>
-        <span className="text-xs text-slate-400">
-          {formatPostDate(post.createdAt)}
-        </span>
-      </div>
+          <span className="text-xs text-slate-400">
+            {formatPostDate(post.createdAt)}
+          </span>
+        </div>
+      </Link>
       <div onClick={(e) => e.stopPropagation()}>
         <PostCardOptionsButton
           post={post}
@@ -137,7 +148,7 @@ const FooterAction = ({
   <button
     type="button"
     onClick={onClick}
-    className="group inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
+    className="group inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 text-sm font-medium whitespace-nowrap text-slate-500 transition-colors hover:bg-white hover:text-slate-900 sm:gap-2 sm:px-3.5"
   >
     <Icon
       className="h-[18px] w-[18px] transition-transform group-active:scale-90"
@@ -188,7 +199,7 @@ export const FeedPostCard = ({
             ),
       )}
     >
-      <div className={cn('px-6 pt-5', isSpace ? 'pb-5' : 'pb-1')}>
+      <div className={cn('px-5 pt-5 sm:px-6', isSpace ? 'pb-5' : 'pb-1')}>
         {isSpace && <SpaceStatusRow status={post.status} />}
         <PostHeader post={post} />
 
@@ -217,7 +228,7 @@ export const FeedPostCard = ({
       </div>
 
       {!isSpace && (
-        <div className="mt-3.5 flex items-center gap-1 border-t border-slate-100 bg-slate-50/60 px-4 py-2">
+        <div className="mt-3.5 flex items-center gap-0.5 border-t border-slate-100 bg-slate-50/60 px-2 py-2 sm:gap-1 sm:px-4">
           <FooterAction icon={ThumbsUp} label="Like" onClick={handleLike} />
           <FooterAction
             icon={MessageCircle}

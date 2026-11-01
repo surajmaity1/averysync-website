@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as InternalRouteImport } from './routes/_internal'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InternalNotificationsRouteImport } from './routes/_internal.notifications'
 import { Route as InternalFeedRouteImport } from './routes/_internal.feed'
 import { Route as InternalChatRouteImport } from './routes/_internal.chat'
+import { Route as InternalUserIdRouteImport } from './routes/_internal.$userId'
 import { Route as InternalFeedIndexRouteImport } from './routes/_internal.feed.index'
 import { Route as InternalFeedPostIdRouteImport } from './routes/_internal.feed.$postId'
+import { Route as InternalAiChatRouteImport } from './routes/_internal.ai.chat'
 
 const InternalRoute = InternalRouteImport.update({
   id: '/_internal',
@@ -25,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InternalNotificationsRoute = InternalNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => InternalRoute,
+} as any)
 const InternalFeedRoute = InternalFeedRouteImport.update({
   id: '/feed',
   path: '/feed',
@@ -33,6 +41,11 @@ const InternalFeedRoute = InternalFeedRouteImport.update({
 const InternalChatRoute = InternalChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => InternalRoute,
+} as any)
+const InternalUserIdRoute = InternalUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
   getParentRoute: () => InternalRoute,
 } as any)
 const InternalFeedIndexRoute = InternalFeedIndexRouteImport.update({
@@ -45,17 +58,28 @@ const InternalFeedPostIdRoute = InternalFeedPostIdRouteImport.update({
   path: '/$postId',
   getParentRoute: () => InternalFeedRoute,
 } as any)
+const InternalAiChatRoute = InternalAiChatRouteImport.update({
+  id: '/ai/chat',
+  path: '/ai/chat',
+  getParentRoute: () => InternalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$userId': typeof InternalUserIdRoute
   '/chat': typeof InternalChatRoute
   '/feed': typeof InternalFeedRouteWithChildren
+  '/notifications': typeof InternalNotificationsRoute
+  '/ai/chat': typeof InternalAiChatRoute
   '/feed/$postId': typeof InternalFeedPostIdRoute
   '/feed/': typeof InternalFeedIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$userId': typeof InternalUserIdRoute
   '/chat': typeof InternalChatRoute
+  '/notifications': typeof InternalNotificationsRoute
+  '/ai/chat': typeof InternalAiChatRoute
   '/feed/$postId': typeof InternalFeedPostIdRoute
   '/feed': typeof InternalFeedIndexRoute
 }
@@ -63,22 +87,43 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_internal': typeof InternalRouteWithChildren
+  '/_internal/$userId': typeof InternalUserIdRoute
   '/_internal/chat': typeof InternalChatRoute
   '/_internal/feed': typeof InternalFeedRouteWithChildren
+  '/_internal/notifications': typeof InternalNotificationsRoute
+  '/_internal/ai/chat': typeof InternalAiChatRoute
   '/_internal/feed/$postId': typeof InternalFeedPostIdRoute
   '/_internal/feed/': typeof InternalFeedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/feed' | '/feed/$postId' | '/feed/'
+  fullPaths:
+    | '/'
+    | '/$userId'
+    | '/chat'
+    | '/feed'
+    | '/notifications'
+    | '/ai/chat'
+    | '/feed/$postId'
+    | '/feed/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/feed/$postId' | '/feed'
+  to:
+    | '/'
+    | '/$userId'
+    | '/chat'
+    | '/notifications'
+    | '/ai/chat'
+    | '/feed/$postId'
+    | '/feed'
   id:
     | '__root__'
     | '/'
     | '/_internal'
+    | '/_internal/$userId'
     | '/_internal/chat'
     | '/_internal/feed'
+    | '/_internal/notifications'
+    | '/_internal/ai/chat'
     | '/_internal/feed/$postId'
     | '/_internal/feed/'
   fileRoutesById: FileRoutesById
@@ -104,6 +149,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_internal/notifications': {
+      id: '/_internal/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof InternalNotificationsRouteImport
+      parentRoute: typeof InternalRoute
+    }
     '/_internal/feed': {
       id: '/_internal/feed'
       path: '/feed'
@@ -116,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof InternalChatRouteImport
+      parentRoute: typeof InternalRoute
+    }
+    '/_internal/$userId': {
+      id: '/_internal/$userId'
+      path: '/$userId'
+      fullPath: '/$userId'
+      preLoaderRoute: typeof InternalUserIdRouteImport
       parentRoute: typeof InternalRoute
     }
     '/_internal/feed/': {
@@ -131,6 +190,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/feed/$postId'
       preLoaderRoute: typeof InternalFeedPostIdRouteImport
       parentRoute: typeof InternalFeedRoute
+    }
+    '/_internal/ai/chat': {
+      id: '/_internal/ai/chat'
+      path: '/ai/chat'
+      fullPath: '/ai/chat'
+      preLoaderRoute: typeof InternalAiChatRouteImport
+      parentRoute: typeof InternalRoute
     }
   }
 }
@@ -150,13 +216,19 @@ const InternalFeedRouteWithChildren = InternalFeedRoute._addFileChildren(
 )
 
 interface InternalRouteChildren {
+  InternalUserIdRoute: typeof InternalUserIdRoute
   InternalChatRoute: typeof InternalChatRoute
   InternalFeedRoute: typeof InternalFeedRouteWithChildren
+  InternalNotificationsRoute: typeof InternalNotificationsRoute
+  InternalAiChatRoute: typeof InternalAiChatRoute
 }
 
 const InternalRouteChildren: InternalRouteChildren = {
+  InternalUserIdRoute: InternalUserIdRoute,
   InternalChatRoute: InternalChatRoute,
   InternalFeedRoute: InternalFeedRouteWithChildren,
+  InternalNotificationsRoute: InternalNotificationsRoute,
+  InternalAiChatRoute: InternalAiChatRoute,
 }
 
 const InternalRouteWithChildren = InternalRoute._addFileChildren(

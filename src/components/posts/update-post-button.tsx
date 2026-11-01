@@ -1,29 +1,46 @@
+import { PostsApi } from '@/api/posts/posts.api'
 import { Post } from '@/api/posts/posts.types'
-import { useUpdatePost } from '@/hooks/useUpdatePost'
-import { getDefaultPostFormData } from '@/libs/post-utils'
+import { getDefaultPostFormData, getUpdatePostDetails } from '@/libs/post-utils'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Edit2 } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '../ui/button'
 import { PostDialog } from './create-update-post-dialog'
 import { TPostFormData } from './create-update-post-form'
 
 type UpdatePostButtonProps = {
   post: Post
-  postId?: string
 }
 
-export const UpdatePostButton = ({ post, postId }: UpdatePostButtonProps) => {
+export const UpdatePostButton = ({ post }: UpdatePostButtonProps) => {
+  const queryClient = useQueryClient()
   const [showUpdatePostForm, setShowUpdatePostForm] = useState(false)
 
-  const { updatePostMutation, handleUpdatePostSubmission } = useUpdatePost({
-    post,
-    postId,
+  const updatePostMutation = useMutation({
+    mutationFn: PostsApi.updatePostById.fn,
+    onSuccess: () => {
+      toast.success('Post updated successfully')
+      void queryClient.invalidateQueries({
+        queryKey: PostsApi.getPostById.key({ postId: post.id }),
+      })
+      void queryClient.invalidateQueries({ queryKey: PostsApi.getPosts.key })
+      setShowUpdatePostForm(false)
+    },
+    onError: () => {
+      toast.error('Unable to update post')
+    },
   })
 
   const handleSubmit = (data: TPostFormData) => {
-    handleUpdatePostSubmission(data, () => {
-      setShowUpdatePostForm(false)
-    })
+    const updatePostDetails = getUpdatePostDetails(data, post)
+
+    if (Object.keys(updatePostDetails).length > 0) {
+      updatePostMutation.mutate({
+        postId: post.id,
+        ...updatePostDetails,
+      })
+    }
   }
 
   return (
@@ -36,10 +53,9 @@ export const UpdatePostButton = ({ post, postId }: UpdatePostButtonProps) => {
       onSubmit={(data) => handleSubmit(data)}
     >
       <Button
-        className="bg-gray-50 hover:bg-gray-100"
+        className="bg-blue-300 hover:bg-blue-400"
         onClick={(e) => {
           e.stopPropagation()
-          setShowUpdatePostForm(true)
         }}
       >
         <Edit2 />
