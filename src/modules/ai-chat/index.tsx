@@ -1,11 +1,11 @@
 import { useAuth } from '@/hooks/useAuth'
-import { cn } from '@/libs/utils'
 import { PanelLeft, SquarePen } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AI_ASSISTANT_NAME, AI_PROMPT_SUGGESTIONS } from './ai-chat.constants'
 import { greetingForHour } from './ai-chat.utils'
 import { AiComposer } from './components/ai-composer'
 import { AiSidebar } from './components/ai-sidebar'
+import { AiSuggestions } from './components/ai-suggestions'
 import { AiThread } from './components/ai-thread'
 import { useAiChatState } from './use-ai-chat-state'
 
@@ -49,15 +49,23 @@ export const AiChat = () => {
   const firstName = user.name?.trim().split(/\s+/)[0]
   const greeting = `${greetingForHour(new Date().getHours())}${firstName ? `, ${firstName}` : ''}`
 
-  const handleSelect = (id: string) => {
-    openConversation(id)
-    setMobileSidebarOpen(false)
-  }
+  const handleSelect = useCallback(
+    (id: string) => {
+      openConversation(id)
+      setMobileSidebarOpen(false)
+    },
+    [openConversation],
+  )
 
-  const handleNewChat = () => {
+  const handleNewChat = useCallback(() => {
     startNewChat()
     setMobileSidebarOpen(false)
-  }
+  }, [startNewChat])
+
+  // Re-picking the same chip must still reseed, so bump a key alongside text.
+  const handlePickSuggestion = useCallback((text: string) => {
+    setSeed((prev) => ({ text, key: (prev?.key ?? 0) + 1 }))
+  }, [])
 
   const sidebarProps = {
     conversations,
@@ -153,38 +161,34 @@ export const AiChat = () => {
             </div>
           </>
         ) : (
-          /* New-chat hero */
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-14 md:pb-4">
-            <div className="w-full max-w-3xl">
-              <h1 className="tracking-tightest pb-2 text-center text-3xl font-bold text-slate-900 sm:text-4xl">
-                {greeting}
-              </h1>
-              <p className="pb-6 text-center text-sm text-slate-500">
-                Ask anything — drafts, summaries, or ideas for your community.
-              </p>
-              <AiComposer onSend={sendMessage} seed={seed} autoFocus />
-              <div className="flex flex-wrap justify-center gap-2 pt-5">
-                {AI_PROMPT_SUGGESTIONS.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    onClick={() =>
-                      setSeed((prev) => ({
-                        text: suggestion,
-                        key: (prev?.key ?? 0) + 1,
-                      }))
-                    }
-                    className={cn(
-                      'rounded-full border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-600 shadow-sm transition-colors',
-                      'hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700',
-                    )}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
+          /* New-chat hero — mirrors the open-thread layout so the prompt bar
+             stays anchored at the bottom (where users expect to type) with the
+             greeting and suggestions clustered just above it, not floating in
+             the vertical middle. */
+          <>
+            <div className="min-h-0 flex-1 overflow-y-auto px-4">
+              <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-end pt-10 pb-2">
+                <h1 className="tracking-tightest pb-2 text-center text-3xl font-bold text-slate-900 sm:text-4xl">
+                  {greeting}
+                </h1>
+                <p className="pb-6 text-center text-sm text-slate-500">
+                  Ask anything — drafts, summaries, or ideas for your community.
+                </p>
+                <AiSuggestions
+                  suggestions={AI_PROMPT_SUGGESTIONS}
+                  onPick={handlePickSuggestion}
+                />
               </div>
             </div>
-          </div>
+            <div className="flex-shrink-0 px-4 pt-2 pb-14 md:pb-4">
+              <AiComposer
+                onSend={sendMessage}
+                seed={seed}
+                autoFocus
+                className="mx-auto w-full max-w-3xl"
+              />
+            </div>
+          </>
         )}
       </main>
     </div>

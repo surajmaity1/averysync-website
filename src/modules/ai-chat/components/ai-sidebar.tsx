@@ -1,4 +1,5 @@
 import { AvatarUser } from '@/components/ui/avatar'
+import { BrandLogo } from '@/components/ui/brand-logo'
 import {
   DropDownMenu,
   DropDownMenuContent,
@@ -14,10 +15,9 @@ import {
   PanelLeftClose,
   Pencil,
   Search,
-  Sparkles,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AiConversation } from '../ai-chat.types'
 import {
   filterConversations,
@@ -100,7 +100,8 @@ const ConversationRow = ({
         onClick={onSelect}
         aria-current={active ? 'true' : undefined}
         className={cn(
-          'min-w-0 flex-1 truncate px-3 py-2 text-left text-sm',
+          'min-w-0 flex-1 truncate rounded-xl px-3 py-2 text-left text-sm',
+          'focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none',
           active ? 'font-semibold text-blue-700' : 'text-slate-700',
         )}
       >
@@ -112,7 +113,9 @@ const ConversationRow = ({
           <button
             type="button"
             aria-label={`Options for ${conversation.title}`}
-            className="mr-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-700 focus:opacity-100 data-[state=open]:opacity-100"
+            // Always visible (opacity 1), not hover-gated: on touch devices
+            // there is no hover, so a hover-only action is unreachable.
+            className="mr-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none data-[state=open]:bg-slate-200 data-[state=open]:text-slate-700"
           >
             <MoreHorizontal className="h-4 w-4" />
           </button>
@@ -161,8 +164,14 @@ export const AiSidebar = ({
   user,
   className,
 }: AiSidebarProps) => {
-  const visible = filterConversations(conversations, query)
-  const groups = groupConversationsByRecency(visible)
+  // Filtering, sorting, and bucketing run on every keystroke in the search
+  // box and on any parent re-render; memoize so they only recompute when the
+  // conversations or the query actually change.
+  const visible = useMemo(
+    () => filterConversations(conversations, query),
+    [conversations, query],
+  )
+  const groups = useMemo(() => groupConversationsByRecency(visible), [visible])
 
   return (
     <nav
@@ -175,9 +184,7 @@ export const AiSidebar = ({
       {/* Brand + collapse */}
       <div className="flex flex-shrink-0 items-center justify-between px-4 pt-4 pb-2">
         <Link to="/feed" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600">
-            <Sparkles className="h-4 w-4 text-white" />
-          </span>
+          <BrandLogo size={32} label="" />
           <span className="text-sm font-bold tracking-tight text-slate-900">
             AverySync AI
           </span>
@@ -197,7 +204,7 @@ export const AiSidebar = ({
         <button
           type="button"
           onClick={onNewChat}
-          className="flex w-full items-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition-colors hover:bg-blue-700"
+          className="flex w-full items-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none"
         >
           <MessageSquarePlus className="h-4 w-4" /> New chat
         </button>
