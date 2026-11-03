@@ -12,8 +12,8 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import React from 'react'
+import { BrandLogo } from '@/components/ui/brand-logo'
 import { AVATAR_COLORS } from '../data/data'
-import { BrandMark } from '../ui/brand-mark'
 import { Eyebrow } from '../ui/eyebrow'
 import { InitialsAvatar } from '../ui/initials-avatar'
 import { PingDot } from '../ui/ping-dot'
@@ -56,7 +56,7 @@ export const ProductShowcase: React.FC = () => {
             {/* App top bar */}
             <div className="flex items-center gap-4 border-b border-slate-100 px-5 py-3">
               <div className="flex items-center gap-2">
-                <BrandMark size="sm" />
+                <BrandLogo size={28} label="" />
                 <span className="text-sm font-bold tracking-tight text-slate-900">
                   Averysync
                 </span>

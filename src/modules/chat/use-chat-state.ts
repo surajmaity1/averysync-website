@@ -1,114 +1,192 @@
+import { ChatApi } from '@/api/chat/chat.api'
+import type { TConversationSummary } from '@/api/chat/chat.types'
+import { useAuth } from '@/hooks/useAuth'
+import { messageOf } from '@/libs/api-error'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { SAMPLE_CONVERSATIONS, SAMPLE_MESSAGE_REQUESTS } from './chat.constants'
+import { toast } from 'sonner'
+import { toConversationListItem, toConversationThread } from './chat.mappers'
 import type { ChatConversation } from './chat.types'
-import {
-  appendMessage,
-  sortConversationsByRecent,
-  totalUnreadCount,
-} from './chat.utils'
+import { sortConversationsByRecent, totalUnreadCount } from './chat.utils'
 
 /**
- * The presentational chat state shared by every surface that renders
- * conversations — the full `/chat` page and the app-wide floating widget.
- *
- * It owns the sample conversations, the active thread, the search query, and
- * the read/unread bookkeeping. There is no messaging backend yet, so sending a
- * message updates local state only (see `chat.constants`). Each mounted surface
- * gets its own independent instance; they are never visible at the same time,
- * so they never need to share a single source of truth.
+ * Chat state for every surface that renders conversations — the full `/chat`
+ * page and the app-wide floating widget. Backed by the messaging REST API
+ * (`ChatApi`): the Primary and Requests inboxes are queries; sending, accepting,
+ * and declining are mutations that invalidate the affected queries so the UI
+ * re-syncs from the backend (the single source of truth for the follow-gated
+ * membership state). Each mounted surface gets its own instance; React Query's
+ * cache keeps them consistent.
  */
 export type ChatState = {
-  /** Conversations ordered by most-recent activity, newest first. */
+  /** Primary (accepted) conversations, newest activity first. */
   conversations: ChatConversation[]
   activeId: string | null
   activeConversation: ChatConversation | null
-  /** Total unread messages across every conversation — for the launcher badge. */
+  /** Total unread messages — for the launcher badge (0 until read receipts). */
   unreadTotal: number
-  /** People who want to message the user but aren't connected yet. */
+  /** People who messaged the user but aren't connected yet (PENDING). */
   requests: ChatConversation[]
   /** Number of pending message requests — for the "Requests" badge. */
   requestCount: number
   query: string
   setQuery: (value: string) => void
-  /** Open a thread and mark it read. */
+  /** Open a thread. */
   openConversation: (id: string) => void
   /** Return to the conversation list. */
   closeConversation: () => void
-  /** Append a message to the active thread (trimmed; blank is a no-op). */
+  /** Send a message to the active thread (trimmed; blank is a no-op). */
   sendMessage: (text: string) => void
-  /** Promote a request into a conversation and open it. Unknown id is a no-op. */
+  /** Accept a message request, promoting it to Primary, and open it. */
   acceptRequest: (id: string) => void
-  /** Dismiss a request without connecting. Unknown id is a no-op. */
+  /** Decline a message request without connecting. */
   declineRequest: (id: string) => void
 }
 
-export const useChatState = (
-  initialConversations: ChatConversation[] = SAMPLE_CONVERSATIONS,
-  initialRequests: ChatConversation[] = SAMPLE_MESSAGE_REQUESTS,
-): ChatState => {
-  const [conversations, setConversations] = useState<ChatConversation[]>(
-    () => initialConversations,
-  )
-  const [requests, setRequests] = useState<ChatConversation[]>(
-    () => initialRequests,
-  )
+export const useChatState = (): ChatState => {
+  const { user } = useAuth()
+  const currentUserId = user.id
+  const queryClient = useQueryClient()
+
   const [activeId, setActiveId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
 
-  const ordered = useMemo(
-    () => sortConversationsByRecent(conversations),
-    [conversations],
+  const primaryQuery = useQuery({
+    queryKey: ChatApi.listConversations.key('primary'),
+    queryFn: () => ChatApi.listConversations.fn({ section: 'primary' }),
+  })
+  const requestsQuery = useQuery({
+    queryKey: ChatApi.listConversations.key('requests'),
+    queryFn: () => ChatApi.listConversations.fn({ section: 'requests' }),
+  })
+
+  const primarySummaries = useMemo(
+    () => primaryQuery.data?.data ?? [],
+    [primaryQuery.data],
   )
-  const unreadTotal = useMemo(
-    () => totalUnreadCount(conversations),
-    [conversations],
+  const requestSummaries = useMemo(
+    () => requestsQuery.data?.data ?? [],
+    [requestsQuery.data],
   )
 
-  const activeConversation = ordered.find((c) => c.id === activeId) ?? null
+  const conversations = useMemo(
+    () =>
+      sortConversationsByRecent(primarySummaries.map(toConversationListItem)),
+    [primarySummaries],
+  )
+  const requests = useMemo(
+    () => requestSummaries.map(toConversationListItem),
+    [requestSummaries],
+  )
+
+  // Active thread: full history + a detail fallback that covers a freshly
+  // created DM the inbox lists haven't picked up yet (profile → chat hand-off).
+  const messagesQuery = useQuery({
+    queryKey: ChatApi.listMessages.key(activeId ?? ''),
+    queryFn: () => ChatApi.listMessages.fn({ conversationId: activeId! }),
+    enabled: !!activeId,
+  })
+  const detailQuery = useQuery({
+    queryKey: ChatApi.getConversation.key(activeId ?? ''),
+    queryFn: () => ChatApi.getConversation.fn(activeId!),
+    enabled: !!activeId,
+  })
+
+  const activeSummary: TConversationSummary | undefined = useMemo(() => {
+    if (!activeId) return undefined
+    return (
+      [...primarySummaries, ...requestSummaries].find(
+        (summary) => summary.id === activeId,
+      ) ?? detailQuery.data
+    )
+  }, [activeId, primarySummaries, requestSummaries, detailQuery.data])
+
+  const activeConversation = useMemo(() => {
+    if (!activeId || !activeSummary) return null
+    return toConversationThread(
+      activeSummary,
+      messagesQuery.data?.data ?? [],
+      currentUserId,
+    )
+  }, [activeId, activeSummary, messagesQuery.data, currentUserId])
+
+  const invalidateInboxes = () => {
+    void queryClient.invalidateQueries({
+      queryKey: ChatApi.listConversations.key('primary'),
+    })
+    void queryClient.invalidateQueries({
+      queryKey: ChatApi.listConversations.key('requests'),
+    })
+  }
+
+  const invalidateUnread = () =>
+    void queryClient.invalidateQueries({ queryKey: ChatApi.unreadCount.key })
+
+  const onError = (error: unknown) => toast.error(messageOf(error))
+
+  // Opening a conversation clears its unread counter, dropping the message-icon
+  // badge. Fire-and-forget: failure just leaves the badge until the next poll.
+  const markReadMutation = useMutation({
+    mutationFn: (id: string) => ChatApi.markRead.fn(id),
+    onSuccess: () => {
+      invalidateUnread()
+      invalidateInboxes()
+    },
+  })
 
   const openConversation = (id: string) => {
     setActiveId(id)
-    // An open conversation is a read conversation.
-    setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, unreadCount: 0 } : c)),
-    )
+    markReadMutation.mutate(id)
   }
 
-  const closeConversation = () => setActiveId(null)
+  const sendMutation = useMutation({
+    mutationFn: (body: string) =>
+      ChatApi.sendMessage.fn({ conversationId: activeId!, body }),
+    onSuccess: () => {
+      if (activeId) {
+        void queryClient.invalidateQueries({
+          queryKey: ChatApi.listMessages.key(activeId),
+        })
+      }
+      invalidateInboxes()
+    },
+    onError,
+  })
+
+  const acceptMutation = useMutation({
+    mutationFn: (id: string) => ChatApi.acceptRequest.fn(id),
+    onSuccess: (_data, id) => {
+      invalidateInboxes()
+      invalidateUnread()
+      openConversation(id)
+    },
+    onError,
+  })
+
+  const declineMutation = useMutation({
+    mutationFn: (id: string) => ChatApi.declineRequest.fn(id),
+    onSuccess: invalidateInboxes,
+    onError,
+  })
 
   const sendMessage = (text: string) => {
-    if (!activeId) return
-    setConversations((prev) =>
-      prev.map((c) => (c.id === activeId ? appendMessage(c, text) : c)),
-    )
-  }
-
-  const acceptRequest = (id: string) => {
-    const request = requests.find((r) => r.id === id)
-    if (!request) return
-    setRequests((prev) => prev.filter((r) => r.id !== id))
-    // A newly accepted request becomes a read, open conversation.
-    setConversations((prev) => [{ ...request, unreadCount: 0 }, ...prev])
-    setActiveId(id)
-  }
-
-  const declineRequest = (id: string) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id))
+    if (!activeId || !text.trim()) return
+    sendMutation.mutate(text.trim())
   }
 
   return {
-    conversations: ordered,
+    conversations,
     activeId,
     activeConversation,
-    unreadTotal,
+    unreadTotal: totalUnreadCount(conversations),
     requests,
     requestCount: requests.length,
     query,
     setQuery,
     openConversation,
-    closeConversation,
+    closeConversation: () => setActiveId(null),
     sendMessage,
-    acceptRequest,
-    declineRequest,
+    acceptRequest: (id: string) => acceptMutation.mutate(id),
+    declineRequest: (id: string) => declineMutation.mutate(id),
   }
 }
