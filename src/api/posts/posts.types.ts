@@ -7,6 +7,8 @@ export type Post = {
   type: POST_TYPE_ENUM
   isRecorded?: boolean
   isDeleted?: boolean
+  likeCount?: number
+  likedByMe?: boolean
   createdAt: string
   createdBy: string
   updatedAt?: string

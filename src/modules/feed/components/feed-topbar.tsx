@@ -1,8 +1,10 @@
 import { POST_TYPE_ENUM } from '@/api/posts/posts.enum'
 import { TUser } from '@/api/users/users.type'
-import { AvatarUser } from '@/components/ui/avatar'
+import { BrandLogo } from '@/components/ui/brand-logo'
+import { MessageUnreadBadge } from '@/modules/chat/components/message-unread-badge'
 import { Link } from '@tanstack/react-router'
 import { Bell, MessageSquareText, Radio, Search, Sparkles } from 'lucide-react'
+import { FeedUserMenu } from './feed-user-menu'
 
 type FeedTopBarProps = {
   user: TUser
@@ -14,10 +16,12 @@ export const FeedTopBar = ({ user, onStartSpace }: FeedTopBarProps) => {
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-full max-w-[1280px] items-center gap-3 px-4 sm:gap-5 lg:px-6">
-        <Link to="/feed" className="flex flex-shrink-0 items-center gap-2.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-slate-900/5">
-            <img src="/favicon.ico" alt="" width={22} height={22} />
-          </span>
+        <Link
+          to="/feed"
+          aria-label="Averysync home"
+          className="flex flex-shrink-0 items-center gap-2.5"
+        >
+          <BrandLogo size={36} label="" className="shadow-sm" />
           {/* The wordmark eats width two nav buttons need on the smallest
               phones; the logo mark alone still identifies the app there. */}
           <span className="xs:inline hidden text-lg font-bold tracking-tight text-slate-900">
@@ -60,9 +64,10 @@ export const FeedTopBar = ({ user, onStartSpace }: FeedTopBarProps) => {
           <Link
             to="/chat"
             aria-label="Messages"
-            className="flex h-[42px] w-[42px] items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="relative flex h-[42px] w-[42px] items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
           >
             <MessageSquareText className="h-5 w-5" />
+            <MessageUnreadBadge />
           </Link>
 
           <button
@@ -74,13 +79,7 @@ export const FeedTopBar = ({ user, onStartSpace }: FeedTopBarProps) => {
             <span className="hidden sm:inline">Start a Space</span>
           </button>
 
-          <button
-            type="button"
-            aria-label="Your profile"
-            className="ml-1 flex rounded-full transition-transform hover:scale-105"
-          >
-            <AvatarUser src={user.image} name={user.name} size={36} />
-          </button>
+          <FeedUserMenu user={user} />
         </nav>
       </div>
     </header>

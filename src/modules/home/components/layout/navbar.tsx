@@ -3,8 +3,8 @@ import { cn } from '@/libs/utils'
 import { ArrowUpRight, Menu, X } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { useHomeCta } from '../../hooks/use-home-cta'
+import { BrandLogo } from '@/components/ui/brand-logo'
 import { NAV_LINKS } from '../data/data'
-import { BrandMark } from '../ui/brand-mark'
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -51,7 +51,7 @@ export const Navbar: React.FC = () => {
           )}
         >
           <a href="#top" className="group flex items-center gap-2.5">
-            <BrandMark className="shadow-sm shadow-blue-600/25" />
+            <BrandLogo size={36} label="" className="shadow-sm" />
             <span className="tracking-tightest text-[17px] font-bold text-slate-900 max-[359px]:hidden">
               Averysync
             </span>

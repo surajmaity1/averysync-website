@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as InternalRouteImport } from './routes/_internal'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InternalNotificationsRouteImport } from './routes/_internal.notifications'
@@ -19,6 +21,16 @@ import { Route as InternalFeedIndexRouteImport } from './routes/_internal.feed.i
 import { Route as InternalFeedPostIdRouteImport } from './routes/_internal.feed.$postId'
 import { Route as InternalAiChatRouteImport } from './routes/_internal.ai.chat'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InternalRoute = InternalRouteImport.update({
   id: '/_internal',
   getParentRoute: () => rootRouteImport,
@@ -66,6 +78,8 @@ const InternalAiChatRoute = InternalAiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/$userId': typeof InternalUserIdRoute
   '/chat': typeof InternalChatRoute
   '/feed': typeof InternalFeedRouteWithChildren
@@ -76,6 +90,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/$userId': typeof InternalUserIdRoute
   '/chat': typeof InternalChatRoute
   '/notifications': typeof InternalNotificationsRoute
@@ -87,6 +103,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_internal': typeof InternalRouteWithChildren
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_internal/$userId': typeof InternalUserIdRoute
   '/_internal/chat': typeof InternalChatRoute
   '/_internal/feed': typeof InternalFeedRouteWithChildren
@@ -99,6 +117,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/privacy'
+    | '/terms'
     | '/$userId'
     | '/chat'
     | '/feed'
@@ -109,6 +129,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/privacy'
+    | '/terms'
     | '/$userId'
     | '/chat'
     | '/notifications'
@@ -119,6 +141,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_internal'
+    | '/privacy'
+    | '/terms'
     | '/_internal/$userId'
     | '/_internal/chat'
     | '/_internal/feed'
@@ -131,10 +155,26 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InternalRoute: typeof InternalRouteWithChildren
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_internal': {
       id: '/_internal'
       path: ''
@@ -238,6 +278,8 @@ const InternalRouteWithChildren = InternalRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InternalRoute: InternalRouteWithChildren,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

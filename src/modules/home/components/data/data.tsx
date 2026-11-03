@@ -218,4 +218,11 @@ export const FOOTER_LINKS: { heading: string; links: NavLink[] }[] = [
       { label: 'Contact', href: '#' },
     ],
   },
+  {
+    heading: 'Legal',
+    links: [
+      { label: 'Terms of Service', href: '/terms' },
+      { label: 'Privacy Policy', href: '/privacy' },
+    ],
+  },
 ]

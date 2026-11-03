@@ -1,3 +1,4 @@
+import { MessageUnreadBadge } from '@/modules/chat/components/message-unread-badge'
 import { Link } from '@tanstack/react-router'
 import { Bell, HomeIcon, MessageSquareText, Sparkles } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -45,7 +46,10 @@ export const BottomNavbar = () => {
           className="flex flex-1 items-center justify-center"
         >
           <Button variant="bottomNavbar" size="bottomNavbar">
-            <MessageSquareText />
+            <span className="relative">
+              <MessageSquareText />
+              <MessageUnreadBadge />
+            </span>
           </Button>
         </Link>
       </div>

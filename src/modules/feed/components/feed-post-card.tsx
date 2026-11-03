@@ -6,6 +6,7 @@ import { ReminderCard } from '@/components/posts/reminder'
 import { AvatarUser } from '@/components/ui/avatar'
 import { cn, formatPostDate } from '@/libs/utils'
 import { PostStatus } from '@/types/post'
+import { useLikeActions } from '../use-like-actions'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import {
@@ -139,24 +140,58 @@ const PostHeader = ({ post }: { post: Post }) => {
 const FooterAction = ({
   icon: Icon,
   label,
+  count,
+  active = false,
+  pressed,
   onClick,
 }: {
   icon: LucideIcon
   label: string
+  count?: number
+  active?: boolean
+  pressed?: boolean
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
 }) => (
   <button
     type="button"
+    aria-label={label}
+    aria-pressed={pressed}
     onClick={onClick}
-    className="group inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 text-sm font-medium whitespace-nowrap text-slate-500 transition-colors hover:bg-white hover:text-slate-900 sm:gap-2 sm:px-3.5"
+    className={cn(
+      'group inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:bg-white sm:gap-2 sm:px-3.5',
+      active ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
+    )}
   >
     <Icon
-      className="h-[18px] w-[18px] transition-transform group-active:scale-90"
+      className={cn(
+        'h-[18px] w-[18px] transition-transform group-active:scale-90',
+        active && 'fill-current',
+      )}
       strokeWidth={2}
     />
-    <span>{label}</span>
+    <span>
+      {typeof count === 'number' && count > 0 ? `${label} ${count}` : label}
+    </span>
   </button>
 )
+
+const LikeAction = ({ post }: { post: Post }) => {
+  const { liked, likeCount, toggle } = useLikeActions(post)
+
+  return (
+    <FooterAction
+      icon={ThumbsUp}
+      label="Like"
+      count={likeCount}
+      active={liked}
+      pressed={liked}
+      onClick={(e) => {
+        e.stopPropagation()
+        toggle()
+      }}
+    />
+  )
+}
 
 export const FeedPostCard = ({
   post,
@@ -164,11 +199,6 @@ export const FeedPostCard = ({
   detail = false,
 }: FeedPostCardProps) => {
   const isSpace = post.type === POST_TYPE_ENUM.SPACE
-
-  const handleLike = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation()
-    toast.info('Like feature coming soon!')
-  }
 
   const handleComment = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
@@ -227,17 +257,23 @@ export const FeedPostCard = ({
         )}
       </div>
 
-      {!isSpace && (
-        <div className="mt-3.5 flex items-center gap-0.5 border-t border-slate-100 bg-slate-50/60 px-2 py-2 sm:gap-1 sm:px-4">
-          <FooterAction icon={ThumbsUp} label="Like" onClick={handleLike} />
-          <FooterAction
-            icon={MessageCircle}
-            label="Comment"
-            onClick={handleComment}
-          />
-          <FooterAction icon={Share2} label="Share" onClick={handleShare} />
-        </div>
-      )}
+      <div
+        className={cn(
+          'mt-3.5 flex items-center gap-0.5 border-t px-2 py-2 sm:gap-1 sm:px-4',
+          isSpace
+            ? 'border-blue-100 bg-white/50'
+            : 'border-slate-100 bg-slate-50/60',
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <LikeAction post={post} />
+        <FooterAction
+          icon={MessageCircle}
+          label="Comment"
+          onClick={handleComment}
+        />
+        <FooterAction icon={Share2} label="Share" onClick={handleShare} />
+      </div>
     </article>
   )
 }

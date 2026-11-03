@@ -1,7 +1,7 @@
 import { Github, Linkedin, Twitter, Youtube } from 'lucide-react'
 import React from 'react'
+import { BrandLogo } from '@/components/ui/brand-logo'
 import { FOOTER_LINKS } from '../data/data'
-import { BrandMark } from '../ui/brand-mark'
 import { Eyebrow } from '../ui/eyebrow'
 import { PingDot } from '../ui/ping-dot'
 
@@ -21,7 +21,7 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-4 lg:grid-cols-12">
           <div className="col-span-2 lg:col-span-5">
             <a href="#top" className="flex items-center gap-2.5">
-              <BrandMark />
+              <BrandLogo size={36} label="" />
               <span className="tracking-tightest text-lg font-bold text-slate-900">
                 Averysync
               </span>

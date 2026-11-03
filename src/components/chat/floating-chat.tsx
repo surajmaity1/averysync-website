@@ -2,6 +2,7 @@ import { ChatThread } from '@/modules/chat/components/chat-thread'
 import { ConversationList } from '@/modules/chat/components/conversation-list'
 import { MessageRequestList } from '@/modules/chat/components/message-request-list'
 import { useChatState } from '@/modules/chat/use-chat-state'
+import { useUnreadMessages } from '@/modules/chat/use-unread-messages'
 import { useRouterState } from '@tanstack/react-router'
 import { MessageSquareText, Minus } from 'lucide-react'
 import { useState } from 'react'
@@ -32,7 +33,6 @@ export function FloatingChat() {
     conversations,
     activeId,
     activeConversation,
-    unreadTotal,
     requests,
     requestCount,
     query,
@@ -43,6 +43,7 @@ export function FloatingChat() {
     acceptRequest,
     declineRequest,
   } = useChatState()
+  const { count: unreadTotal } = useUnreadMessages()
 
   const handleAccept = (id: string) => {
     acceptRequest(id)

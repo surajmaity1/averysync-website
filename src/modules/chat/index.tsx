@@ -28,7 +28,12 @@ const useIsDesktop = (): boolean => {
   return isDesktop
 }
 
-export const Chat = () => {
+type ChatProps = {
+  /** Conversation to open on load — the profile → chat "Message" hand-off. */
+  initialConversationId?: string
+}
+
+export const Chat = ({ initialConversationId }: ChatProps = {}) => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const isDesktop = useIsDesktop()
@@ -51,11 +56,28 @@ export const Chat = () => {
   // Whether the detail pane is showing the message-requests inbox instead of a
   // conversation thread.
   const [showRequests, setShowRequests] = useState(false)
+  const [handledInitial, setHandledInitial] = useState(false)
+
+  // Open the conversation handed off from the profile "Message" button, once.
+  useEffect(() => {
+    if (initialConversationId && !handledInitial) {
+      setShowRequests(false)
+      openConversation(initialConversationId)
+      setHandledInitial(true)
+    }
+    // openConversation is stable enough for this mount-time hand-off.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialConversationId, handledInitial])
 
   // Desktop always shows a thread: default to the most recent conversation.
   // Mobile starts on the list (activeId null) until the user taps a row.
   useEffect(() => {
-    if (isDesktop && activeId === null && ordered.length > 0) {
+    if (
+      isDesktop &&
+      activeId === null &&
+      ordered.length > 0 &&
+      !initialConversationId
+    ) {
       openConversation(ordered[0].id)
     }
     // openConversation is stable enough for this mount-time default.
