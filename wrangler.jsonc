@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "production-averysync-website",
+  "name": "staging-averysync-website",
   "compatibility_date": "2025-12-24",
   "assets": {
     "directory": "./dist",
