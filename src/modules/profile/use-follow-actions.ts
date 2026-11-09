@@ -47,17 +47,16 @@ export const useFollowActions = (profileUserId: string) => {
 
   const acceptMutation = useMutation({
     mutationFn: ({ followerId }: { followerId: string; name: string }) =>
-      FollowApi.acceptRequest.fn({ followerId }),
+      FollowApi.followRequestAction.fn({ followerId, action: 'accept' }),
     onSuccess: (_edge, { name }) => {
       refreshFollowGraph()
-      toast.success(`${name} now follows you`)
     },
     onError,
   })
 
   const rejectMutation = useMutation({
     mutationFn: ({ followerId }: { followerId: string }) =>
-      FollowApi.rejectRequest.fn({ followerId }),
+      FollowApi.followRequestAction.fn({ followerId, action: 'reject' }),
     onSuccess: refreshFollowGraph,
     onError,
   })

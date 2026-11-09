@@ -2,6 +2,7 @@ import { axiosAPIClient } from '@/libs/axios-api-client'
 import { TApiResponse } from '../common/common.type'
 import {
   FollowerTargetDTO,
+  FollowRequestActionDTO,
   FollowTargetDTO,
   ListFollowUsersDTO,
   TFollowEdge,
@@ -71,28 +72,25 @@ export const FollowApi = {
     key: ['followApi.listRequests'],
     fn: async (pagination: TPaginationParams = {}): Promise<TFollowList> => {
       const { data } = await axiosAPIClient.get<TFollowList>(
-        '/v1/follow-requests',
+        '/v1/requests/follow',
         { params: paginationParams(pagination) },
       )
 
       return data
     },
   },
-  acceptRequest: {
-    key: ['followApi.acceptRequest'],
-    fn: async ({ followerId }: FollowerTargetDTO): Promise<TFollowEdge> => {
-      const { data } = await axiosAPIClient.post<TApiResponse<TFollowEdge>>(
-        `/v1/follow-requests/${followerId}/accept`,
-        {},
+  followRequestAction: {
+    key: ['followApi.followRequestAction'],
+    fn: async ({
+      followerId,
+      action,
+    }: FollowRequestActionDTO): Promise<TFollowEdge | void> => {
+      const { data } = await axiosAPIClient.patch<TApiResponse<TFollowEdge>>(
+        `/v1/requests/follow/${followerId}`,
+        { action },
       )
 
-      return data.data
-    },
-  },
-  rejectRequest: {
-    key: ['followApi.rejectRequest'],
-    fn: async ({ followerId }: FollowerTargetDTO): Promise<void> => {
-      await axiosAPIClient.post(`/v1/follow-requests/${followerId}/reject`, {})
+      return data?.data
     },
   },
   removeFollower: {
