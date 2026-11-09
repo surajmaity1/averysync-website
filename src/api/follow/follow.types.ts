@@ -48,6 +48,12 @@ export type FollowerTargetDTO = {
   followerId: string
 }
 
+export type TFollowRequestAction = 'accept' | 'reject'
+
+export type FollowRequestActionDTO = FollowerTargetDTO & {
+  action: TFollowRequestAction
+}
+
 export type TPaginationParams = {
   limit?: number
   offset?: number
